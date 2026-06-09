@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Series Trainer">
+<meta name="theme-color" content="#0a0a0f">
+<title>SPTG2026 Series Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#0f172a;--surface2:#111827;--border:#1e293b;--border2:#1a1a2e;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;--text4:#334155;
+  --cyan:#00D4FF;--green:#4ade80;--yellow:#FFD93D;--red:#f87171;--orange:#fb923c;--blue:#378ADD;
+  --green-bg:#052e16;--yellow-bg:#2d2200;--red-bg:#2d0a0a;--gray-bg:#111827;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Mono','Courier New',monospace;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+
+/* HEADER */
+#header{background:linear-gradient(135deg,#0f172a 0%,#0a0a0f 100%);border-bottom:1px solid var(--border2);padding:18px 20px 0;position:sticky;top:0;z-index:10;padding-top:max(18px,env(safe-area-inset-top))}
+.eyebrow{font-size:9px;letter-spacing:4px;color:var(--cyan);text-transform:uppercase;margin-bottom:3px}
+.htitle{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#f8fafc;letter-spacing:-0.5px}
+#tabs{display:flex;margin-top:14px;border-bottom:1px solid var(--border)}
+.tab{flex:1;padding:10px 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'DM Mono',monospace;cursor:pointer;border:none;background:transparent;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s}
+.tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.tab:hover:not(.active){color:var(--text2)}
+
+/* MAIN */
+#main{max-width:560px;margin:0 auto;padding:20px 16px 60px}
+.lbl{font-size:9px;color:var(--text3);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px}
+
+/* BUTTON GROUPS */
+.bgrp{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px}
+.bgrp button{flex:1;padding:10px 6px;font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;border:none;border-right:1px solid var(--border);background:var(--surface2);color:var(--text3);transition:all 0.15s;letter-spacing:0.5px;line-height:1.4}
+.bgrp button:last-child{border-right:none}
+.bgrp button.active{background:var(--surface);color:var(--text);font-weight:500}
+.bgrp button:hover:not(.active){background:#1a2235;color:var(--text2)}
+
+/* START / ACTION BUTTONS */
+.sbtn{width:100%;padding:14px;font-size:14px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:1px solid var(--cyan);background:transparent;color:var(--cyan);border-radius:10px;transition:all 0.2s;margin-top:4px}
+.sbtn:hover{background:var(--cyan);color:#0a0a0f}
+.sbtn:active{transform:scale(0.98)}
+.gbtn{width:100%;padding:11px;font-size:12px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text3);border-radius:10px;transition:all 0.2s;margin-top:8px}
+.gbtn:hover{border-color:var(--text2);color:var(--text2)}
+.abtn{flex:1;padding:11px;font-size:12px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);border-radius:10px;transition:all 0.15s}
+.abtn:hover{border-color:var(--text2);color:var(--text)}
+.abtn.pri{border-color:var(--cyan);color:var(--cyan)}
+.abtn.pri:hover{background:var(--cyan);color:#0a0a0f}
+
+/* METRIC CARDS */
+.mgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.mgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.mv{font-size:20px;font-weight:500;color:var(--text)}
+.ml{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:1px}
+
+/* SEQUENCE DISPLAY */
+#qbox-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+#seq-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;padding:1rem 0;min-height:72px}
+.snum{font-size:26px;font-weight:500;color:var(--text)}
+.scomma{font-size:20px;color:var(--text4)}
+.sdots{font-size:22px;color:var(--text3)}
+
+/* INPUT */
+#ans-wrap{display:flex;gap:10px;justify-content:center;margin-bottom:10px}
+#ain{width:150px;font-size:24px;text-align:center;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Mono',monospace;-webkit-appearance:none;transition:border-color 0.2s}
+#ain:focus{outline:none;border-color:var(--cyan)}
+#subbtn{padding:10px 22px;font-size:14px;font-family:'DM Mono',monospace;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);border-radius:10px;transition:all 0.15s;letter-spacing:1px}
+#subbtn:hover{border-color:var(--cyan);color:var(--cyan)}
+#subbtn:active{transform:scale(0.97)}
+
+/* FEEDBACK */
+#fb{font-size:13px;text-align:center;min-height:18px;margin-bottom:10px;font-weight:500;line-height:1.5}
+.fbok{color:var(--green)}.fberr{color:var(--red)}
+
+/* TIMER */
+#tbar-wrap{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:12px}
+#tbar{height:3px;background:var(--blue);transition:width 0.1s linear,background 0.3s}
+
+/* PROGRESS DOTS */
+#prow{display:flex;gap:4px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.pd{width:9px;height:9px;border-radius:50%;background:var(--surface);border:1px solid var(--border)}
+.pd.ok{background:var(--green);border-color:var(--green)}
+.pd.err{background:var(--red);border-color:var(--red)}
+.pd.skip{background:var(--yellow);border-color:var(--yellow)}
+.pd.cur{border:2px solid var(--cyan)}
+
+/* COUNTER ROW */
+.crow{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:8px}
+.cmod{color:var(--cyan);font-weight:500}
+
+/* RESULT TABS */
+.rtab{flex:1;padding:9px 0;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;cursor:pointer;border:none;background:transparent;color:var(--text3);border-bottom:1.5px solid transparent;margin-bottom:-1px;transition:all 0.2s}
+.rtab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+/* GRADE BOX */
+.gbox{font-size:12px;text-align:center;padding:10px;border-radius:8px;margin-bottom:14px;line-height:1.5}
+
+/* REVIEW ROWS — THREE STATES */
+.rev-row{border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+/* Correct — green */
+.rev-row.correct{background:var(--green-bg);border:1px solid #166534}
+.rev-row.correct .rev-seq{color:var(--green)}
+.rev-row.correct .rev-ans{color:var(--green);font-weight:500}
+/* Wrong — red */
+.rev-row.wrong{background:var(--red-bg);border:1px solid #7f1d1d}
+.rev-row.wrong .rev-seq{color:var(--red)}
+.rev-row.wrong .rev-ans{color:var(--red);font-weight:500}
+/* Timeout / skipped — yellow */
+.rev-row.skipped{background:var(--yellow-bg);border:1px solid #713f12}
+.rev-row.skipped .rev-seq{color:var(--yellow)}
+.rev-row.skipped .rev-ans{color:var(--yellow);font-weight:500}
+.rev-left{flex:1;min-width:0}
+.rev-seq{font-size:13px;margin-bottom:4px;word-break:break-all}
+.rev-hint{font-size:11px;opacity:0.7;font-style:italic;margin-bottom:2px}
+.rev-right{text-align:right;white-space:nowrap;flex-shrink:0}
+.rev-time{font-size:11px;color:var(--text3);margin-top:3px}
+.rev-badge{font-size:9px;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,0.07);color:var(--text3);display:inline-block;margin-top:3px}
+.rev-state-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:500}
+.correct .rev-state-lbl{color:var(--green)}
+.wrong .rev-state-lbl{color:var(--red)}
+.skipped .rev-state-lbl{color:var(--yellow)}
+
+/* REVIEW LEGEND */
+.rev-legend{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.rev-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3)}
+.rev-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* TYPE TABLE */
+.type-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.type-row:last-child{border-bottom:none}
+.type-name{color:var(--text2)}
+.type-stats{display:flex;align-items:center;gap:10px}
+.type-frac{font-size:11px;color:var(--text3)}
+
+/* SPARK */
+.spark{display:flex;align-items:flex-end;gap:2px;height:24px}
+.sbar{width:10px;border-radius:1px 1px 0 0;background:var(--border);min-height:2px}
+.sbar.hi{background:var(--green)}.sbar.lo{background:var(--red)}.sbar.mid{background:var(--yellow)}
+
+/* HISTORY ROWS */
+.hrow{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.htype{font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:3px;text-transform:uppercase}
+.hdet{font-size:13px;color:var(--text2)}
+.badge{font-size:10px;padding:3px 10px;border-radius:6px;font-weight:500;white-space:nowrap}
+.bok{background:var(--green-bg);color:var(--green)}.bwarn{background:var(--yellow-bg);color:var(--yellow)}.berr{background:var(--red-bg);color:var(--red)}
+.last-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.empty{text-align:center;color:var(--text3);padding:30px 0;font-size:12px;line-height:2}
+
+.panel{display:none}
+.panel.active{display:block;animation:fi 0.2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="eyebrow">Student Pilot Training Group</div>
+  <div class="htitle">Series Trainer</div>
+  <div id="tabs">
+    <button class="tab active" id="tab-train" onclick="switchTab('train')">Train</button>
+    <button class="tab" id="tab-history" onclick="switchTab('history')">History</button>
+  </div>
+</div>
+
+<div id="main">
+
+  <!-- SETUP -->
+  <div id="train-panel" class="panel active">
+    <div class="lbl">Time per question</div>
+    <div class="bgrp" id="tgrp">
+      <button class="active" onclick="pick('tgrp',this,'timeLimit',12)">12s<br><span style="font-size:10px;opacity:0.6">test pace</span></button>
+      <button onclick="pick('tgrp',this,'timeLimit',20)">20s<br><span style="font-size:10px;opacity:0.6">training</span></button>
+      <button onclick="pick('tgrp',this,'timeLimit',0)">No limit</button>
+    </div>
+    <div id="last-info"></div>
+    <button class="sbtn" onclick="startSession()">Start 20 questions →</button>
+    <button class="gbtn" onclick="switchTab('history')">View history & type breakdown</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="game-panel" class="panel">
+    <div class="crow">
+      <span id="gctr">1 / 20</span>
+      <span class="cmod">Series</span>
+      <span id="gtlbl"></span>
+    </div>
+    <div id="tbar-wrap"><div id="tbar" style="width:100%"></div></div>
+    <div id="prow"></div>
+    <div id="qbox-wrap">
+      <div id="seq-row"></div>
+      <div id="ans-wrap">
+        <input id="ain" type="number" inputmode="decimal" placeholder="?" autocomplete="off"
+          onkeydown="if(event.key==='Enter')submitAns()">
+        <button id="subbtn" onclick="submitAns()">Submit →</button>
+      </div>
+      <div id="fb"></div>
+    </div>
+    <div class="mgrid3">
+      <div class="mc"><div class="mv" id="gc">0</div><div class="ml">Correct</div></div>
+      <div class="mc"><div class="mv" id="gs">0</div><div class="ml">Best streak</div></div>
+      <div class="mc"><div class="mv" id="ge">0s</div><div class="ml">Elapsed</div></div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-panel" class="panel">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:3px;text-align:center;color:var(--text3);margin-bottom:14px">Session complete</div>
+
+    <!-- Result tabs -->
+    <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:14px">
+      <button class="rtab active" id="rtab-summary" onclick="rtab('summary',this)">Summary</button>
+      <button class="rtab" id="rtab-review" onclick="rtab('review',this)">Review</button>
+      <button class="rtab" id="rtab-types" onclick="rtab('types',this)">By type</button>
+    </div>
+
+    <!-- Summary pane -->
+    <div id="rpane-summary">
+      <div class="mgrid4" style="margin-bottom:12px">
+        <div class="mc"><div class="mv" id="r-cor">—</div><div class="ml">Correct</div></div>
+        <div class="mc"><div class="mv" id="r-acc">—</div><div class="ml">Accuracy</div></div>
+        <div class="mc"><div class="mv" id="r-avg">—</div><div class="ml">Avg/Q</div></div>
+        <div class="mc"><div class="mv" id="r-str">—</div><div class="ml">Streak</div></div>
+      </div>
+      <div class="gbox" id="r-grade"></div>
+      <div class="lbl">Pattern type breakdown</div>
+      <div id="r-typebreak"></div>
+    </div>
+
+    <!-- Review pane -->
+    <div id="rpane-review" style="display:none">
+      <div class="rev-legend">
+        <div class="rev-legend-item"><div class="rev-dot" style="background:var(--green);border:1px solid #166534"></div>Correct</div>
+        <div class="rev-legend-item"><div class="rev-dot" style="background:var(--red);border:1px solid #7f1d1d"></div>Wrong</div>
+        <div class="rev-legend-item"><div class="rev-dot" style="background:var(--yellow);border:1px solid #713f12"></div>Timed out</div>
+      </div>
+      <div id="r-review"></div>
+    </div>
+
+    <!-- By type pane -->
+    <div id="rpane-types" style="display:none">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px">All-time across all sessions. Sparkline = last 7.</div>
+      <div id="r-alltypes"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="abtn" onclick="goBack()">← Again</button>
+      <button class="abtn pri" onclick="logCoach()">Log to coach ↗</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="history-panel" class="panel">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="mc"><div class="mv" id="h-sess">0</div><div class="ml">Sessions</div></div>
+      <div class="mc"><div class="mv" id="h-best">—</div><div class="ml">Best accuracy</div></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div class="lbl">Accuracy trend (last 7 sessions)</div>
+      <div class="spark" id="h-spark" style="height:36px;gap:4px"></div>
+    </div>
+    <div class="lbl">Performance by pattern type</div>
+    <div id="h-types" style="margin-bottom:16px"></div>
+    <div class="lbl">Recent sessions</div>
+    <div id="h-list"></div>
+  </div>
+
+</div>
+
+<script>
+/* ---- STORAGE ---- */
+var SK='sptg-series-v3';
+var hist=[];
+function loadHist(){try{var s=localStorage.getItem(SK);if(s)hist=JSON.parse(s);}catch(e){}}
+function saveHist(){try{localStorage.setItem(SK,JSON.stringify(hist));}catch(e){}}
+loadHist();
+
+/* ---- STATE ---- */
+var timeLimit=12;
+var questions=[],qIdx=0,correct=0,streak=0,bestStreak=0;
+var times=[],results=[],active=false;
+var timerInt=null,nextTimer=null;
+var sessStart=0,qStart=0;
+var currentAns=0,currentType='',currentHint='';
+var lastSummary='';
+
+/* ---- PATTERN TYPES ---- */
+var TYPES={
+  ARITH:'Arithmetic (+/−)',
+  GEO:'Geometric (×/÷)',
+  ALT:'Alternating ops',
+  DIFF:'Difference pattern',
+  FIB:'Fibonacci-style',
+  INTER:'Interleaved series',
+  GROUP:'Grouping rule',
+  POWER:'Powers & roots',
+  DIGIT:'Digit pattern',
+  MIXED:'Mixed operations'
+};
+
+/* ---- HELPERS ---- */
+function rInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function rPick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+/* ---- GENERATORS ---- */
+function genArith(){
+  var s=rInt(1,20);var d=rPick([2,3,4,5,6,7,8,10,-2,-3,-4]);
+  var len=rInt(5,7);var seq=[s];
+  for(var i=1;i<len;i++) seq.push(seq[i-1]+d);
+  var ans=seq[seq.length-1];
+  return{seq:seq.slice(0,-1),ans:ans,type:'ARITH',hint:(d>0?'+':'')+d+' each term'};
+}
+function genGeo(){
+  var s=rPick([1,2,3,4,6]);var r=rPick([2,3,4]);
+  var len=rInt(5,7);var seq=[s];
+  for(var i=1;i<len;i++) seq.push(seq[i-1]*r);
+  return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'GEO',hint:'×'+r+' each term'};
+}
+function genAlt(){
+  var v=rPick([
+    function(){var s=rInt(5,20);var a=rInt(2,8);var b=rInt(2,6);var seq=[s];for(var i=1;i<7;i++)seq.push(i%2===1?seq[i-1]+a:seq[i-1]-b);return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'ALT',hint:'+'+a+' then −'+b+' alternating'};},
+    function(){var s=rInt(2,8);var a=rInt(2,4);var b=rInt(2,4);var seq=[s];for(var i=1;i<7;i++)seq.push(i%2===1?seq[i-1]*a:seq[i-1]+b);return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'ALT',hint:'×'+a+' then +'+b+' alternating'};},
+    function(){var s=rInt(10,40);var d=rInt(2,5);var seq=[s];for(var i=1;i<7;i++)seq.push(i%2===1?seq[i-1]-d:seq[i-1]*2);return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'ALT',hint:'−'+d+' then ×2 alternating'};}
+  ]);
+  return v();
+}
+function genDiff(){
+  var v=rPick([
+    function(){var s=rInt(1,5);var d=rInt(1,3);var diffs=[d];var seq=[s,s+d];for(var i=2;i<7;i++){diffs.push(diffs[i-2]+(i-1));seq.push(seq[i-1]+diffs[i-1]);}return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'DIFF',hint:'differences increase by '+(diffs[1]-diffs[0])};},
+    function(){var s=rInt(5,20);var step=rInt(3,8);var seq=[s];for(var i=1;i<7;i++)seq.push(seq[i-1]+(step+i-1));return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'DIFF',hint:'differences: '+step+','+(step+1)+','+(step+2)+'...'};},
+    function(){var s=rInt(1,5);var seq=[s];var d=1;for(var i=1;i<7;i++){seq.push(seq[i-1]+d*d);d++;}return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'DIFF',hint:'differences are perfect squares: 1,4,9,16...'};}
+  ]);
+  return v();
+}
+function genFib(){
+  var a=rInt(1,5);var b=rInt(1,8);var seq=[a,b];
+  for(var i=2;i<8;i++) seq.push(seq[i-2]+seq[i-1]);
+  return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'FIB',hint:'each term = sum of previous two'};
+}
+function genInter(){
+  var v=rPick([
+    function(){var a=rInt(1,8);var b=rInt(10,25);var sa=rInt(1,3);var sb=rInt(1,3);var seq=[];for(var i=0;i<4;i++){seq.push(a+i*sa);seq.push(b+i*sb);}seq.push(a+4*sa);return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'INTER',hint:'two interleaved: +'+sa+' and +'+sb};},
+    function(){var a=rInt(1,6);var b=rInt(5,15);var c=rInt(20,40);var sa=rInt(1,2);var sb=rInt(1,2);var sc=rInt(1,3);var seq=[a,b,c,a+sa,b+sb,c+sc,a+sa*2];return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'INTER',hint:'three interleaved sequences'};}
+  ]);
+  return v();
+}
+function genGroup(){
+  var v=rPick([
+    function(){var g=[];for(var i=0;i<3;i++){var a=rInt(2,8);var b=rInt(2,8);g.push(a,b,a*b);}var a2=rInt(2,8);var b2=rInt(2,8);g.push(a2,b2);return{seq:g.slice(0,-1),ans:g[g.length-2]*g[g.length-1],type:'GROUP',hint:'groups of 3: a, b, a×b'};},
+    function(){var g=[];for(var i=0;i<3;i++){var a=rInt(2,9);var b=rInt(2,9);g.push(a,b,a+b);}var a2=rInt(2,9);var b2=rInt(2,9);g.push(a2,b2);return{seq:g.slice(0,-1),ans:g[g.length-2]+g[g.length-1],type:'GROUP',hint:'groups of 3: a, b, a+b'};}
+  ]);
+  return v();
+}
+function genPower(){
+  var v=rPick([
+    function(){var seq=[];for(var i=1;i<=6;i++)seq.push(i*i);return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'POWER',hint:'perfect squares: n²'};},
+    function(){var seq=[];for(var i=1;i<=6;i++)seq.push(i*i*i);return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'POWER',hint:'perfect cubes: n³'};},
+    function(){var seq=[1,4,9,16,25,36];return{seq:seq.slice(0,-1),ans:36,type:'POWER',hint:'n² sequence'};}
+  ]);
+  return v();
+}
+function genDigit(){
+  var v=rPick([
+    function(){return{seq:[1,22,333,4444],ans:55555,type:'DIGIT',hint:'digit repetition: 1,22,333...'};},
+    function(){var d=rInt(2,9);return{seq:[d,d*10+d,d*100+d*10+d],ans:d*1000+d*100+d*10+d,type:'DIGIT',hint:'repeating digit pattern'};},
+    function(){return{seq:[2348,8234,4823,3482],ans:2348,type:'DIGIT',hint:'last digit rotates to front'};}
+  ]);
+  return v();
+}
+function genMixed(){
+  var v=rPick([
+    function(){var a=rInt(1,5);var seq=[a];for(var i=1;i<7;i++)seq.push(seq[i-1]*2+2);return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'MIXED',hint:'×2+2 each term'};},
+    function(){var a=rInt(2,5);var seq=[a];for(var i=1;i<7;i++)seq.push(seq[i-1]*(i+1));return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'MIXED',hint:'×2,×3,×4... (multiplier increases)'};},
+    function(){var s=rInt(5,20);var seq=[s];for(var i=1;i<7;i++)seq.push(i%2===1?seq[i-1]*3:seq[i-1]-rInt(4,10));return{seq:seq.slice(0,-1),ans:seq[seq.length-1],type:'MIXED',hint:'×3 then subtract alternating'};}
+  ]);
+  return v();
+}
+
+/* ---- FIXED UNIT 2 BANK ---- */
+var FIXED=[
+  {seq:[1,2,6,3,4,14,5,6],ans:22,type:'INTER',hint:'(a+b)×2 in groups of 3'},
+  {seq:[4,10,14,24,38],ans:62,type:'FIB',hint:'each = sum of previous two'},
+  {seq:[1,1,2,3,5,8],ans:13,type:'FIB',hint:'Fibonacci: each = sum of prev two'},
+  {seq:[1,2,4,8,16,32],ans:64,type:'GEO',hint:'×2 each term'},
+  {seq:[1,3,5,7,9],ans:11,type:'ARITH',hint:'+2 each term (odd numbers)'},
+  {seq:[100,90,80,70],ans:60,type:'ARITH',hint:'−10 each term'},
+  {seq:[1,2,4,7,11],ans:16,type:'DIFF',hint:'differences: +1,+2,+3,+4,+5'},
+  {seq:[2,3,5,8,13,21],ans:34,type:'FIB',hint:'each = sum of previous two'},
+  {seq:[3,6,2,7,1,8],ans:0,type:'INTER',hint:'two interleaved: −1 and +1'},
+  {seq:[1,4,9,16,25],ans:36,type:'POWER',hint:'perfect squares: 1²,2²,3²...'},
+  {seq:[1,8,27,64],ans:125,type:'POWER',hint:'perfect cubes: 1³,2³,3³...'},
+  {seq:[1,22,333,4444],ans:55555,type:'DIGIT',hint:'digit repetition pattern'},
+  {seq:[2348,8234,4823,3482],ans:2348,type:'DIGIT',hint:'digit rotation: last digit moves to front'},
+  {seq:[3,5,15,4,6,24,5,7],ans:35,type:'GROUP',hint:'groups of 3: a, b, a×b'},
+  {seq:[2,5,12,27,58],ans:121,type:'MIXED',hint:'×2+1, ×2+2, ×2+3...'},
+  {seq:[1,4,10,22,46],ans:94,type:'MIXED',hint:'×2+2 each term'},
+  {seq:[10,10,20,60,240,1200],ans:7200,type:'MIXED',hint:'×1,×2,×3,×4,×5,×6'},
+  {seq:[15,23,30,36],ans:41,type:'DIFF',hint:'differences: +8,+7,+6,+5'},
+  {seq:[9,15,24,39,63],ans:102,type:'FIB',hint:'each = sum of previous two'},
+  {seq:[1,2,6,24,120],ans:720,type:'GEO',hint:'×2,×3,×4,×5,×6 (factorial pattern)'},
+  {seq:[192,48,12],ans:3,type:'GEO',hint:'÷4 each term'},
+  {seq:[1,2,4,6,9,12,16],ans:20,type:'DIFF',hint:'differences increase in pairs'},
+  {seq:[7,11,19,35],ans:67,type:'DIFF',hint:'differences double: 4,8,16,32'},
+  {seq:[5,-10,20,-40],ans:80,type:'GEO',hint:'×−2 each term'},
+  {seq:[17,16,15,20,19,18,23],ans:22,type:'INTER',hint:'three interleaved: −1 each'},
+  {seq:[10,9,11,8,12,7,13],ans:6,type:'ALT',hint:'−1,+2,−3,+4 alternating'},
+  {seq:[3,5,10,3,9,21,3,11],ans:26,type:'GROUP',hint:'groups: a, b, a×b+something'},
+  {seq:[2,4,12,48],ans:240,type:'MIXED',hint:'×2,×3,×4,×5'},
+  {seq:[1,2,3,3,5,5,8],ans:7,type:'INTER',hint:'two interleaved Fibonacci sequences'},
+  {seq:[6,19,15,3,7,20,16,4,8],ans:21,type:'INTER',hint:'four interleaved sequences'},
+  /* --- NEW: Alternating Escalating Operations (×n then +n, operators climb) --- */
+  {seq:[2,3,6,9,36,41],ans:246,type:'MIXED',hint:'alternating ×n then +n — operators escalate: ×3,+3,×4,+5,×6,+7'},
+  {seq:[1,2,3,6,8,24,27],ans:108,type:'MIXED',hint:'alternating +n then ×n — operators escalate: +1,×3,+2,×4,+3,×4'},
+  {seq:[3,4,12,14,56,59],ans:236,type:'MIXED',hint:'alternating +n then ×n escalating: +1,×3,+2,×4,+3,×4'},
+  /* --- NEW: Pair-Sum / Pair-Product grouping --- */
+  {seq:[1,13,2,12,5,9,3],ans:11,type:'GROUP',hint:'pairs sum to 14: (1,13),(2,12),(5,9),(3,?)'},
+  {seq:[3,7,8,2,5,5,6],ans:4,type:'GROUP',hint:'pairs sum to 10: (3,7),(8,2),(5,5),(6,?)'},
+  {seq:[2,9,3,8,4,7,5],ans:6,type:'GROUP',hint:'pairs sum to 11: (2,9),(3,8),(4,7),(5,?)'},
+  {seq:[4,6,8,3,16,2,32],ans:1,type:'GROUP',hint:'pairs multiply to 24: (4,6),(8,3),(16,2),(32,?)'},
+  /* --- NEW: Second-order Difference (gaps-of-gaps) --- */
+  {seq:[1,3,6,11,19,31],ans:48,type:'DIFF',hint:'gaps-of-gaps increase by 1: gaps are 2,3,5,8,12,17'},
+  {seq:[2,3,5,8,12,17],ans:23,type:'DIFF',hint:'gaps increase by 1 each time: 1,2,3,4,5,6'},
+  {seq:[1,2,4,7,12,20],ans:33,type:'DIFF',hint:'gaps double then add: gaps are 1,2,3,5,8,13 (Fibonacci gaps)'},
+];
+
+function genAltEscalating(){
+  /* Rule: ×a, +a, ×(a+1), +(a+1+2)... operators climb */
+  var starts=[
+    function(){return{seq:[2,3,6,9,36,41],ans:246,type:'MIXED',hint:'alternating ×n,+n — operators escalate: ×3,+3,×4,+5,×6,+7'};},
+    function(){var s=rInt(1,4);var op=rInt(2,4);var seq=[s];seq.push(seq[0]*op);seq.push(seq[1]+op);seq.push(seq[2]*(op+1));seq.push(seq[3]+(op+2));seq.push(seq[4]*(op+2));return{seq:seq,ans:seq[seq.length-1]*(op+3),type:'MIXED',hint:'alternating ×n then +n — operators escalate'};},
+    function(){var s=rInt(1,3);var op=3;var seq=[s,s+1,(s+1)*op,(s+1)*op+op,(s+1)*op*2*(op)];return{seq:[s,s+1,(s+1)*op,(s+1)*op+op],ans:(s+1)*op*2,type:'MIXED',hint:'alternating +1,×n,+n,×n — escalating'};},
+  ];
+  return rPick(starts)();
+}
+function genPairSum(){
+  var total=rInt(8,16);var pairs=[];
+  for(var i=0;i<3;i++){var a=rInt(1,total-1);pairs.push(a,total-a);}
+  var last=rInt(1,total-1);pairs.push(last);
+  return{seq:pairs,ans:total-last,type:'GROUP',hint:'pairs sum to '+total};
+}
+var GENS=[genArith,genArith,genGeo,genGeo,genAlt,genAlt,genDiff,genDiff,genFib,genFib,genInter,genGroup,genPower,genDigit,genMixed,genMixed,genAltEscalating,genPairSum];
+
+function buildSession(){
+  var pool=FIXED.slice().sort(function(){return Math.random()-0.5;});
+  var fixed=pool.slice(0,10);
+  var gen=[];for(var i=0;i<10;i++) gen.push(GENS[i%GENS.length]());
+  return fixed.concat(gen).sort(function(){return Math.random()-0.5;}).slice(0,20);
+}
+
+/* ---- UI HELPERS ---- */
+function show(id){document.getElementById(id).style.display='block';}
+function hide(id){document.getElementById(id).style.display='none';}
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+}
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('tab-'+tab).classList.add('active');
+  showPanel(tab+'-panel');
+  if(tab==='history')renderHistory();
+}
+function pick(grpId,btn,prop,val){
+  document.getElementById(grpId).querySelectorAll('button').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  if(prop==='timeLimit')timeLimit=parseInt(val);
+}
+
+/* ---- DOTS ---- */
+function buildDots(n){
+  var row=document.getElementById('prow');row.innerHTML='';
+  for(var i=0;i<n;i++){
+    var d=document.createElement('div');
+    d.className='pd'+(i===0?' cur':'');d.id='pd'+i;
+    row.appendChild(d);
+  }
+}
+function markDot(i,state){
+  var d=document.getElementById('pd'+i);
+  if(d)d.className='pd '+state;
+  var nx=document.getElementById('pd'+(i+1));
+  if(nx)nx.classList.add('cur');
+}
+
+/* ---- SESSION ---- */
+function startSession(){
+  clearInterval(timerInt);clearTimeout(nextTimer);
+  qIdx=0;correct=0;streak=0;bestStreak=0;times=[];results=[];active=true;
+  sessStart=Date.now();
+  questions=buildSession();
+  showPanel('game-panel');
+  document.getElementById('tbar-wrap').style.display=timeLimit>0?'block':'none';
+  document.getElementById('gc').textContent='0';
+  document.getElementById('gs').textContent='0';
+  document.getElementById('ge').textContent='0s';
+  buildDots(20);
+  loadQ();
+}
+
+function loadQ(){
+  if(!active)return;
+  if(qIdx>=questions.length){endSession();return;}
+  var q=questions[qIdx];
+  currentAns=q.ans;currentType=q.type;currentHint=q.hint;
+  document.getElementById('gctr').textContent=(qIdx+1)+' / 20';
+  document.getElementById('ain').value='';
+  document.getElementById('fb').textContent='';
+  document.getElementById('fb').className='';
+  document.getElementById('gtlbl').textContent='';
+  var sr=document.getElementById('seq-row');sr.innerHTML='';
+  q.seq.forEach(function(n){
+    var sp=document.createElement('span');sp.className='snum';sp.textContent=n;sr.appendChild(sp);
+    var cm=document.createElement('span');cm.className='scomma';cm.textContent=',';sr.appendChild(cm);
+  });
+  var dt=document.createElement('span');dt.className='sdots';dt.textContent='....';sr.appendChild(dt);
+  setTimeout(function(){var i=document.getElementById('ain');if(i)i.focus();},60);
+  qStart=Date.now();
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(timerInt);timerInt=null;
+  if(timeLimit<=0)return;
+  var bar=document.getElementById('tbar');
+  var lbl=document.getElementById('gtlbl');
+  bar.style.width='100%';bar.style.background=var_('--blue');
+  var el=0;
+  timerInt=setInterval(function(){
+    if(!active){clearInterval(timerInt);return;}
+    el+=100;
+    var pct=Math.max(0,100-(el/(timeLimit*1000))*100);
+    bar.style.width=pct+'%';
+    lbl.textContent=Math.max(0,(timeLimit*1000-el)/1000).toFixed(1)+'s';
+    if(pct<25)bar.style.background=var_('--red');
+    else if(pct<55)bar.style.background=var_('--orange');
+    if(el>=timeLimit*1000){clearInterval(timerInt);timerInt=null;handleResult(false,true);}
+  },100);
+}
+
+function var_(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()||name;}
+
+function submitAns(){
+  if(!active)return;
+  clearInterval(timerInt);timerInt=null;
+  var v=parseFloat(document.getElementById('ain').value);
+  if(isNaN(v)){startTimer();return;}
+  handleResult(Math.abs(v-currentAns)<0.01,false);
+}
+
+function handleResult(ok,timeout){
+  if(!active)return;
+  clearInterval(timerInt);timerInt=null;
+  var el=(Date.now()-qStart)/1000;
+  times.push(el);
+  var q=questions[qIdx];
+  var state=ok?'correct':(timeout?'skipped':'wrong');
+  results.push({seq:q.seq,ans:q.ans,hint:q.hint,type:q.type,state:state,time:el.toFixed(1)});
+  var fb=document.getElementById('fb');
+  if(ok){
+    correct++;streak++;if(streak>bestStreak)bestStreak=streak;
+    fb.textContent='Correct  +'+el.toFixed(1)+'s';fb.className='fbok';
+  } else {
+    streak=0;
+    fb.textContent=(timeout?'Time up! ':'Wrong. ')+'Answer: '+q.ans+' — '+q.hint;
+    fb.className='fberr';
+  }
+  document.getElementById('gc').textContent=correct;
+  document.getElementById('gs').textContent=bestStreak;
+  document.getElementById('ge').textContent=((Date.now()-sessStart)/1000).toFixed(0)+'s';
+  markDot(qIdx,state);
+  qIdx++;
+  nextTimer=setTimeout(function(){nextTimer=null;loadQ();},ok?700:1600);
+}
+
+/* ---- END SESSION ---- */
+function endSession(){
+  active=false;clearInterval(timerInt);clearTimeout(nextTimer);
+  var total=questions.length;
+  var acc=Math.round((correct/total)*100);
+  var sumT=0;for(var i=0;i<times.length;i++)sumT+=times[i];
+  var avgT=(times.length>0?sumT/times.length:0).toFixed(1);
+
+  /* Build type stats */
+  var typeStats={};
+  results.forEach(function(r){
+    if(!typeStats[r.type])typeStats[r.type]={total:0,correct:0};
+    typeStats[r.type].total++;
+    if(r.state==='correct')typeStats[r.type].correct++;
+  });
+
+  var entry={date:new Date().toISOString(),correct:correct,total:total,acc:acc,avgTime:parseFloat(avgT),streak:bestStreak,typeStats:typeStats};
+  hist.unshift(entry);if(hist.length>100)hist=hist.slice(0,100);
+  saveHist();
+
+  showPanel('result-panel');
+  rtab('summary',document.getElementById('rtab-summary'));
+
+  document.getElementById('r-cor').textContent=correct+'/'+total;
+  document.getElementById('r-acc').textContent=acc+'%';
+  document.getElementById('r-avg').textContent=avgT+'s';
+  document.getElementById('r-str').textContent=bestStreak;
+
+  var grade,bg,col;
+  if(acc>=90&&parseFloat(avgT)<=12){grade='SIAP-ready — pattern recognition automatic';bg=var_('--green-bg');col=var_('--green');}
+  else if(acc>=75){grade='Strong — keep compressing hesitation time';bg=var_('--surface');col=var_('--text2');}
+  else if(acc>=55){grade='Developing — exposure building pattern library';bg=var_('--yellow-bg');col=var_('--yellow');}
+  else{grade='Keep drilling — automaticity comes with reps';bg=var_('--surface');col=var_('--text2');}
+  var g=document.getElementById('r-grade');g.textContent=grade;g.style.background=bg;g.style.color=col;
+
+  /* Type breakdown */
+  var tb=document.getElementById('r-typebreak');tb.innerHTML='';
+  Object.keys(typeStats).forEach(function(k){
+    var s=typeStats[k];var a=Math.round(s.correct/s.total*100);
+    var col2=a>=80?'var(--green)':a>=60?'var(--yellow)':'var(--red)';
+    var row=document.createElement('div');row.className='type-row';
+    row.innerHTML='<span class="type-name">'+TYPES[k]+'</span>'
+      +'<div class="type-stats"><span class="type-frac">'+s.correct+'/'+s.total+'</span>'
+      +'<span style="font-size:13px;font-weight:500;color:'+col2+'">'+a+'%</span></div>';
+    tb.appendChild(row);
+  });
+
+  /* Review */
+  var rev=document.getElementById('r-review');rev.innerHTML='';
+  results.forEach(function(r){
+    var stateLabel={correct:'✓ Correct',wrong:'✗ Wrong',skipped:'⏱ Timed out'}[r.state];
+    var d=document.createElement('div');
+    d.className='rev-row '+r.state;
+    d.innerHTML='<div class="rev-left">'
+      +'<div class="rev-seq">'+r.seq.join(', ')+', .... = <strong class="rev-ans">'+r.ans+'</strong></div>'
+      +'<div class="rev-hint">'+r.hint+'</div>'
+      +'</div>'
+      +'<div class="rev-right">'
+      +'<div class="rev-state-lbl">'+stateLabel+'</div>'
+      +'<div class="rev-badge">'+TYPES[r.type]+'</div>'
+      +'<div class="rev-time">'+(r.state==='skipped'?'timeout':r.time+'s')+'</div>'
+      +'</div>';
+    rev.appendChild(d);
+  });
+
+  renderAllTypes();
+  lastSummary=correct+'/'+total+' correct ('+acc+'%), avg '+avgT+'s, streak '+bestStreak;
+  renderLastInfo();
+}
+
+/* ---- RESULT TABS ---- */
+function rtab(tab,btn){
+  document.querySelectorAll('.rtab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  ['summary','review','types'].forEach(function(t){
+    document.getElementById('rpane-'+t).style.display=t===tab?'block':'none';
+  });
+  if(tab==='types')renderAllTypes();
+}
+
+function renderAllTypes(){
+  var allT={};
+  hist.forEach(function(h){
+    if(!h.typeStats)return;
+    Object.keys(h.typeStats).forEach(function(k){
+      if(!allT[k])allT[k]={sessions:[],totalC:0,totalQ:0};
+      var s=h.typeStats[k];
+      allT[k].sessions.unshift(Math.round(s.correct/s.total*100));
+      allT[k].totalC+=s.correct;allT[k].totalQ+=s.total;
+    });
+  });
+  var at=document.getElementById('r-alltypes');at.innerHTML='';
+  Object.keys(TYPES).forEach(function(k){
+    if(!allT[k])return;
+    var d=allT[k];var oa=Math.round(d.totalC/d.totalQ*100);
+    var col=oa>=80?'var(--green)':oa>=60?'var(--yellow)':'var(--red)';
+    var row=document.createElement('div');row.className='type-row';
+    row.innerHTML='<div><div style="font-size:13px;color:var(--text2)">'+TYPES[k]+'</div>'
+      +'<div style="font-size:11px;color:var(--text4)">'+d.totalQ+' Qs total</div></div>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +sparkHTML(d.sessions.slice(0,7).reverse())
+      +'<span style="font-size:14px;font-weight:500;color:'+col+';min-width:36px;text-align:right">'+oa+'%</span></div>';
+    at.appendChild(row);
+  });
+}
+
+function sparkHTML(vals){
+  if(!vals||vals.length<2) return '<div style="font-size:10px;color:var(--text4);width:80px;text-align:right">more data needed</div>';
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=mx-mn||1;
+  var h='<div class="spark" style="width:80px;gap:3px">';
+  for(var i=0;i<vals.length;i++){
+    var ht=Math.round(((vals[i]-mn)/rng)*20)+4;
+    var isLast=i===vals.length-1;
+    var cls=isLast?(vals[i]>=80?' hi':vals[i]>=60?' mid':' lo'):'';
+    h+='<div class="sbar'+cls+'" style="height:'+ht+'px;flex:1"></div>';
+  }
+  return h+'</div>';
+}
+
+function goBack(){showPanel('train-panel');document.getElementById('tab-train').classList.add('active');document.getElementById('tab-history').classList.remove('active');}
+
+function logCoach(){
+  var msg='My series number session: '+lastSummary;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(msg).then(function(){alert('Copied! Paste into your coach chat.');}).catch(function(){prompt('Copy this:',msg);});
+  } else {prompt('Copy this:',msg);}
+}
+
+/* ---- HISTORY ---- */
+function renderHistory(){
+  document.getElementById('h-sess').textContent=hist.length;
+  var best=hist.length?Math.max.apply(null,hist.map(function(h){return h.acc;})):null;
+  document.getElementById('h-best').textContent=best!==null?best+'%':'—';
+  var sp=document.getElementById('h-spark');sp.innerHTML='';
+  var last7=hist.slice(0,7).reverse();
+  if(last7.length>=2){
+    var mn=Math.min.apply(null,last7.map(function(s){return s.acc;}));
+    var mx=Math.max.apply(null,last7.map(function(s){return s.acc;}));
+    var rng=mx-mn||1;
+    last7.forEach(function(s,i){
+      var ht=Math.round(((s.acc-mn)/rng)*28)+4;
+      var isLast=i===last7.length-1;
+      var bar=document.createElement('div');
+      bar.className='sbar'+(isLast?(s.acc>=70?' hi':s.acc>=50?' mid':' lo'):'');
+      bar.style.height=ht+'px';bar.style.flex='1';sp.appendChild(bar);
+    });
+  } else {sp.innerHTML='<span style="font-size:11px;color:var(--text3)">Need more sessions</span>';}
+
+  /* Types */
+  var allT={};
+  hist.forEach(function(h){
+    if(!h.typeStats)return;
+    Object.keys(h.typeStats).forEach(function(k){
+      if(!allT[k])allT[k]={sessions:[],totalC:0,totalQ:0};
+      var s=h.typeStats[k];
+      allT[k].sessions.push(Math.round(s.correct/s.total*100));
+      allT[k].totalC+=s.correct;allT[k].totalQ+=s.total;
+    });
+  });
+  var ht=document.getElementById('h-types');ht.innerHTML='';
+  if(Object.keys(allT).length===0){ht.innerHTML='<div class="empty">No sessions yet.<br>Complete a session to see your type breakdown.</div>';}
+  Object.keys(TYPES).forEach(function(k){
+    if(!allT[k])return;
+    var d=allT[k];var oa=Math.round(d.totalC/d.totalQ*100);
+    var col=oa>=80?'var(--green)':oa>=60?'var(--yellow)':'var(--red)';
+    var row=document.createElement('div');row.className='type-row';
+    row.innerHTML='<div><div style="font-size:13px;color:var(--text2)">'+TYPES[k]+'</div>'
+      +'<div style="font-size:11px;color:var(--text4)">'+d.totalQ+' Qs · '+d.sessions.length+' sessions</div></div>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +sparkHTML(d.sessions.slice(-7))
+      +'<span style="font-size:14px;font-weight:500;color:'+col+';min-width:36px;text-align:right">'+oa+'%</span></div>';
+    ht.appendChild(row);
+  });
+
+  /* Session list */
+  var hl=document.getElementById('h-list');hl.innerHTML='';
+  if(hist.length===0){hl.innerHTML='<div class="empty">No sessions yet.</div>';return;}
+  hist.slice(0,12).forEach(function(s){
+    var d=new Date(s.date);
+    var ds=d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    var bc=s.acc>=80?'bok':s.acc>=60?'bwarn':'berr';
+    var row=document.createElement('div');row.className='hrow';
+    row.innerHTML='<div><div class="htype">'+ds+'</div>'
+      +'<div class="hdet">'+s.correct+'/'+s.total+' correct · '+s.avgTime.toFixed(1)+'s avg · streak '+s.streak+'</div></div>'
+      +'<span class="badge '+bc+'">'+s.acc+'%</span>';
+    hl.appendChild(row);
+  });
+}
+
+function renderLastInfo(){
+  var el=document.getElementById('last-info');
+  if(!el)return;
+  if(hist.length===0){el.innerHTML='';return;}
+  var s=hist[0];var col=s.acc>=80?'var(--green)':s.acc>=60?'var(--yellow)':'var(--red)';
+  el.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">'
+    +'<div class="lbl" style="margin-bottom:6px">Last session</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center">'
+    +'<span style="font-size:12px;color:var(--text2)">'+s.correct+'/'+s.total+' · '+s.avgTime.toFixed(1)+'s avg · streak '+s.streak+'</span>'
+    +'<span style="font-size:15px;font-weight:500;color:'+col+'">'+s.acc+'%</span></div></div>';
+}
+
+renderLastInfo();
+</script>
+</body>
+</html>

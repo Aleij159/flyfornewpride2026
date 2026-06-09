@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SPTG2026 STM Trainer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090f;--s1:#0d1117;--s2:#161b22;--border:#21262d;
+  --text:#e6edf3;--text2:#8b949e;--text3:#484f58;
+  --cyan:#39d0ff;--green:#3fb950;--yellow:#d29922;--red:#f85149;--blue:#58a6ff;--purple:#bc8cff;--orange:#ffa657;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Courier New',monospace;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+
+/* HEADER */
+#hdr{background:var(--s1);border-bottom:1px solid var(--border);padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--cyan)}
+.hbadge{font-size:10px;color:var(--text3);letter-spacing:1px}
+
+/* TIMER BAR */
+#tbar-wrap{height:3px;background:var(--border);position:sticky;top:49px;z-index:99}
+#tbar{height:3px;background:var(--cyan);transition:width 0.5s linear,background 0.3s;width:100%}
+
+/* MAIN */
+#main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
+
+/* PHASE SCREENS */
+.phase{display:none}
+.phase.active{display:block}
+
+/* START SCREEN */
+#phase-start{text-align:center;padding:40px 16px}
+.big-title{font-size:28px;font-weight:700;color:var(--cyan);letter-spacing:2px;margin-bottom:8px}
+.sub{font-size:13px;color:var(--text2);margin-bottom:32px;line-height:1.6}
+.format-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;text-align:left}
+.fbox{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px}
+.fnum{font-size:24px;font-weight:700;color:var(--cyan);margin-bottom:4px}
+.flbl{font-size:10px;color:var(--text2);letter-spacing:1px;text-transform:uppercase}
+.tip-box{background:var(--s1);border:1px solid var(--yellow);border-radius:10px;padding:16px;margin-bottom:28px;text-align:left}
+.tip-title{font-size:10px;color:var(--yellow);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.tip-item{font-size:12px;color:var(--text2);margin-bottom:5px;padding-left:12px;position:relative;line-height:1.5}
+.tip-item::before{content:'→';position:absolute;left:0;color:var(--yellow)}
+.go-btn{width:100%;padding:16px;font-size:13px;font-family:'Courier New',monospace;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border:1px solid var(--cyan);background:transparent;color:var(--cyan);border-radius:10px;transition:all 0.2s}
+.go-btn:hover{background:var(--cyan);color:var(--bg)}
+.go-btn:active{transform:scale(0.98)}
+
+/* PASSAGE PHASE */
+#phase-read .phase-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+#phase-read .phase-title{font-size:18px;font-weight:700;margin-bottom:4px}
+#phase-read .phase-sub{font-size:11px;color:var(--text2);margin-bottom:20px}
+#timer-display{font-size:48px;font-weight:700;text-align:center;color:var(--cyan);margin:16px 0;letter-spacing:4px;font-family:'Courier New',monospace}
+#timer-display.warning{color:var(--yellow)}
+#timer-display.urgent{color:var(--red)}
+.passage-box{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;line-height:1.85;font-size:14px;color:var(--text);margin-bottom:16px}
+.passage-box p{margin-bottom:14px}
+.passage-box p:last-child{margin-bottom:0}
+.highlight{color:var(--cyan);font-weight:700}
+.strategy-bar{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:11px;color:var(--text2);line-height:1.6}
+.strategy-bar strong{color:var(--yellow)}
+
+/* MATH PHASE */
+#phase-math{text-align:center}
+#phase-math .phase-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:12px}
+#phase-math .phase-title{font-size:18px;font-weight:700;margin-bottom:4px;color:var(--red)}
+#phase-math .phase-sub{font-size:11px;color:var(--text2);margin-bottom:16px}
+.math-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.mq{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left}
+.mq-q{font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px}
+.mq-inp{width:100%;padding:8px;font-size:16px;font-family:'Courier New',monospace;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);text-align:center;-webkit-appearance:none}
+.mq-inp:focus{outline:none;border-color:var(--cyan)}
+.mq.correct{border-color:var(--green);background:#0d2318}
+.mq.wrong{border-color:var(--red);background:#2d0a0a}
+.mq-ans{font-size:11px;color:var(--green);margin-top:4px}
+
+/* ANSWER PHASE */
+#phase-answer .phase-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--purple);margin-bottom:8px}
+#phase-answer .phase-title{font-size:18px;font-weight:700;margin-bottom:4px}
+#phase-answer .phase-sub{font-size:11px;color:var(--text2);margin-bottom:16px}
+.q-card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;transition:border-color 0.2s}
+.q-card.answered{border-color:var(--text3)}
+.q-num{font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:6px}
+.q-text{font-size:13px;color:var(--text);margin-bottom:10px;line-height:1.5}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.opt{padding:8px 10px;font-size:12px;font-family:'Courier New',monospace;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--text2);border-radius:7px;transition:all 0.15s;text-align:left}
+.opt:hover{border-color:var(--text2);color:var(--text)}
+.opt.selected{border-color:var(--purple);color:var(--purple);background:#1a0a3a}
+.opt.correct{border-color:var(--green);color:var(--green);background:#0d2318}
+.opt.wrong{border-color:var(--red);color:var(--red);background:#2d0a0a}
+.submit-btn{width:100%;padding:14px;font-size:13px;font-family:'Courier New',monospace;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:1px solid var(--purple);background:transparent;color:var(--purple);border-radius:10px;transition:all 0.2s;margin-top:8px}
+.submit-btn:hover{background:var(--purple);color:var(--bg)}
+.submit-btn:active{transform:scale(0.98)}
+
+/* RESULTS */
+#phase-results{text-align:center}
+.score-big{font-size:64px;font-weight:700;color:var(--cyan);line-height:1;margin:20px 0 4px}
+.score-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+.res-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
+.rbox{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.rval{font-size:22px;font-weight:700}
+.rlbl{font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:2px}
+.review-list{text-align:left;margin-bottom:20px}
+.rev-item{background:var(--s1);border-radius:8px;padding:12px;margin-bottom:6px;font-size:12px;border-left:3px solid var(--border)}
+.rev-item.ok{border-left-color:var(--green)}
+.rev-item.bad{border-left-color:var(--red)}
+.rev-q{color:var(--text2);margin-bottom:4px}
+.rev-a{color:var(--text3)}
+.rev-a span{font-weight:700}
+.rev-a .correct-ans{color:var(--green)}
+.rev-a .your-ans{color:var(--red)}
+.cat-breakdown{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;text-align:left}
+.cat-title{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.cat-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.cat-name{font-size:11px;color:var(--text2);width:120px;flex-shrink:0}
+.cat-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.cat-bar{height:6px;border-radius:3px;transition:width 0.5s}
+.cat-pct{font-size:11px;color:var(--text2);width:36px;text-align:right}
+.again-btn{width:100%;padding:14px;font-size:13px;font-family:'Courier New',monospace;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:1px solid var(--cyan);background:transparent;color:var(--cyan);border-radius:10px;transition:all 0.2s;margin-bottom:10px}
+.again-btn:hover{background:var(--cyan);color:var(--bg)}
+.coach-note{background:var(--s1);border:1px solid var(--yellow);border-radius:10px;padding:14px;text-align:left;margin-bottom:16px}
+.coach-note-title{font-size:10px;color:var(--yellow);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.coach-note-text{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* PASSAGE SELECTOR */
+.pass-select{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.ps-btn{padding:6px 12px;font-size:11px;font-family:'Courier New',monospace;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--text3);border-radius:6px;transition:all 0.15s;letter-spacing:1px}
+.ps-btn.active{border-color:var(--cyan);color:var(--cyan);background:#001a2e}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <div class="htitle">STM TRAINER</div>
+  <div class="hbadge">SPTG2026 · PRO#1 FORMAT</div>
+</div>
+<div id="tbar-wrap"><div id="tbar"></div></div>
+
+<div id="main">
+
+<!-- START -->
+<div id="phase-start" class="phase active">
+  <div class="big-title">MEMORY TEST</div>
+  <div class="sub">Pro#1 format · Read passage → Math distraction → Answer 15 questions</div>
+  <div class="format-grid">
+    <div class="fbox"><div class="fnum" style="color:var(--blue)">3:00</div><div class="flbl">Read passage</div></div>
+    <div class="fbox"><div class="fnum" style="color:var(--red)">1:00</div><div class="flbl">Math distraction</div></div>
+    <div class="fbox"><div class="fnum" style="color:var(--purple)">3:00</div><div class="flbl">Answer 15 Qs</div></div>
+    <div class="fbox"><div class="fnum" style="color:var(--green)">12s</div><div class="flbl">Per question</div></div>
+  </div>
+  <div class="tip-box">
+    <div class="tip-title">⚡ Reading Strategy</div>
+    <div class="tip-item">Tag by category: numbers, names, times, runways, headings</div>
+    <div class="tip-item">Chunk by episode: each flight leg is one memory cluster</div>
+    <div class="tip-item">Before math starts: replay key numbers in sequence (5 seconds)</div>
+    <div class="tip-item">Answer phase: scan all 15 first, answer certain ones first</div>
+  </div>
+  <div style="margin-bottom:16px">
+    <div style="font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Select Passage</div>
+    <div class="pass-select" id="pass-select"></div>
+  </div>
+  <button class="go-btn" onclick="startRead()">START SESSION →</button>
+</div>
+
+<!-- READ -->
+<div id="phase-read" class="phase">
+  <div class="phase-label">Phase 1 — Reading</div>
+  <div class="phase-title">Memorise the passage</div>
+  <div class="phase-sub">Tag numbers · names · sequences · unusual details</div>
+  <div id="timer-display">4:00</div>
+  <div class="strategy-bar">
+    <strong>CHUNK BY EPISODE:</strong> Each flight leg = one memory cluster · Numbers in sequence · Unusual details last
+  </div>
+  <div class="passage-box" id="passage-text"></div>
+</div>
+
+<!-- MATH -->
+<div id="phase-math" class="phase">
+  <div class="phase-label">⚠ Phase 2 — Interference</div>
+  <div class="phase-title">Math Distraction</div>
+  <div class="phase-sub">Answer all questions · Timer counts down · Memory is being tested</div>
+  <div id="timer-display2" style="font-size:48px;font-weight:700;text-align:center;color:var(--red);margin:12px 0;letter-spacing:4px;font-family:'Courier New',monospace">1:00</div>
+  <div style="font-size:11px;color:var(--text3);margin-bottom:16px;text-align:center">5 sec before timer: replay key numbers from the passage</div>
+  <div class="math-grid" id="math-grid"></div>
+</div>
+
+<!-- ANSWER -->
+<div id="phase-answer" class="phase">
+  <div class="phase-label">Phase 3 — Recall</div>
+  <div class="phase-title">Answer 15 Questions</div>
+  <div class="phase-sub">Scan all questions first · Certain answers first · 12s per question</div>
+  <div id="timer-display3" style="font-size:36px;font-weight:700;text-align:center;color:var(--purple);margin:12px 0;letter-spacing:4px;font-family:'Courier New',monospace">3:00</div>
+  <div id="q-list"></div>
+  <button class="submit-btn" onclick="submitAnswers()">SUBMIT ANSWERS →</button>
+</div>
+
+<!-- RESULTS -->
+<div id="phase-results" class="phase">
+  <div class="phase-label">Session Complete</div>
+  <div class="score-big" id="score-display">0%</div>
+  <div class="score-sub" id="score-sub"></div>
+  <div class="res-grid" id="res-grid"></div>
+  <div class="coach-note" id="coach-note"></div>
+  <div class="cat-breakdown" id="cat-breakdown"></div>
+  <div class="review-list" id="review-list"></div>
+  <button class="again-btn" onclick="resetAll()">TRY AGAIN →</button>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ============================================================
+// PASSAGE BANK
+// ============================================================
+var PASSAGES = [
+{
+  id:'P1', title:'Bangkok–Frankfurt Rotation',
+  text:`Captain Aniruth Chokdee, a Thai Airways pilot with over 16,000 flight hours, was assigned to a long-haul duty rotation spanning four international flights. The journey started in Bangkok and concluded in Frankfurt, with stopovers in Singapore, Tokyo Haneda, and Seoul Incheon. The flights operated under the numbers TG632, TG401, TG659, and TG676, all flown with a Boeing 777-300ER, registration HS-TTE.
+
+The first flight, TG632, departed Suvarnabhumi Airport on July 4 at 06:40 AM from Gate D4, using Runway 19L for takeoff, cruising at FL350 on a heading of 150°. Weather in Bangkok was partly cloudy, 27°C. The flight to Singapore took approximately 2 hours and 15 minutes, with touchdown at 10:15 AM local time on Runway 02C. On board were 269 passengers, including three unaccompanied minors and six passengers requiring assistance. Catering included 15 vegetarian Hindu meals. A minor concern was flagged during preflight: the left inboard fuel pump was inspected but cleared. Mid-flight, cabin crew member Panatda accidentally spilled orange juice on a Taiwanese passenger in seat 43C, prompting a quick cleanup and apology.
+
+After a 70-minute ground turnaround, the second leg, TG401, departed Singapore at 11:25 AM, bound for Tokyo Haneda. The flight climbed to FL370, cruising on a heading of 030°, with a total flight time of 6 hours and 40 minutes. The flight landed at 19:05 PM on Runway A. Among the 252 passengers were a Japanese senior tour group seated in rows 38-41. During baggage transfer, a diplomatic briefcase was mistakenly removed but retrieved in time. Light turbulence was experienced over the East China Sea, and in-flight announcements were made in Thai, English, and Japanese.
+
+The crew then checked into the Royal Haneda Hotel, where Captain Aniruth stayed in Room 5317. Maintenance teams in Tokyo reported minor cosmetic damage to the left winglet, which was deferred for later repair. Following an 11-hour and 20-minute layover, they departed on TG659 at 06:25 AM for the short 2-hour and 25-minute hop to Seoul Incheon, flying at FL390 on a heading of 295°. The aircraft landed at 08:50 AM on Runway 34L. There were 241 passengers, including two infants and an opera singer carrying a fragile glass instrument, stored in Closet C. Meals featured a Thai breakfast and Korean bibimbap.
+
+The final leg, TG676, departed Incheon at 10:55 AM, headed for Frankfurt. The flight lasted 11 hours and 5 minutes, cruising at FL390 on a heading of 330° at Mach 0.84. The aircraft landed in Frankfurt at 16:00 local time on Runway 07C, concluding a complex and well-executed four-leg journey with only minor incidents logged.`,
+  questions:[
+    {q:'What was the aircraft registration used for all four flights?',opts:['HS-TGA','HS-TKT','HS-TTE','HS-THA'],ans:2,cat:'Details'},
+    {q:'How many total flight legs did Captain Aniruth complete?',opts:['3','4','5','6'],ans:1,cat:'Numbers'},
+    {q:'What was the flight number for the Bangkok to Singapore leg?',opts:['TG632','TG676','TG659','TG777'],ans:0,cat:'Sequences'},
+    {q:'At what time did TG632 depart from Bangkok?',opts:['10:15 AM','06:40 AM','08:55 AM','09:40 AM'],ans:1,cat:'Times'},
+    {q:'What was the runway number used for departure from Suvarnabhumi Airport?',opts:['02L','19R','01C','19L'],ans:3,cat:'Numbers'},
+    {q:'How many vegetarian Hindu meals were loaded on the flight to Singapore?',opts:['9','12','15','18'],ans:2,cat:'Numbers'},
+    {q:'What flight level was used for the Seoul to Frankfurt segment?',opts:['FL350','FL370','FL390','FL410'],ans:2,cat:'Numbers'},
+    {q:'On which seat did the cabin crew accidentally spill orange juice?',opts:['34H','43C','13D','09A'],ans:1,cat:'Details'},
+    {q:'How many passengers were on the flight from Tokyo to Seoul?',opts:['241','189','252','225'],ans:0,cat:'Numbers'},
+    {q:'What room number did Captain Aniruth stay in at the hotel?',opts:['4216','5120','1715','5317'],ans:3,cat:'Details'},
+    {q:'What was the heading used during the Singapore to Tokyo flight?',opts:['150°','295°','030°','330°'],ans:2,cat:'Numbers'},
+    {q:'What type of aircraft was used for the journey?',opts:['Boeing 777-300ER','Airbus 330-300','Boeing 777-200ER','Boeing 787-800'],ans:0,cat:'Details'},
+    {q:"Where was the diplomat's briefcase mistakenly removed?",opts:['Tokyo','Frankfurt','Seoul','Singapore'],ans:0,cat:'Details'},
+    {q:'What was the nationality of the passenger who had juice spilled on them?',opts:['Thai','Taiwanese','Japanese','Korean'],ans:1,cat:'Details'},
+    {q:'Where was light turbulence experienced during the journey?',opts:['Atlantic Ocean','Indian Sea','Pacific Ocean','East China Sea'],ans:3,cat:'Details'},
+  ]
+},
+{
+  id:'P2', title:'Chiang Mai–Osaka Rotation',
+  text:`First Officer Siriporn Thanawat, with 4,200 flight hours on the Airbus A330-300, was tasked with a three-leg positioning flight for Thai Airways. The rotation began in Chiang Mai and terminated in Osaka Kansai, with a technical stop at Bangkok and a crew change in Hong Kong. The flights were numbered TG118, TG628, and TG622, operated with aircraft registration HS-TEK.
+
+TG118 departed Chiang Mai International Airport on March 12 at 07:15 AM from Gate A2, using Runway 36 for departure. Outside temperature was 22°C with visibility of 8 kilometres. The flight climbed to FL280, cruising on a heading of 185° to Bangkok. Flight time was 1 hour and 10 minutes, landing at 08:25 AM on Runway 21L at Suvarnabhumi. The aircraft carried 187 passengers. Three passengers were travelling on diplomatic passports and were seated in row 2. The senior flight attendant, Khun Malee, reported a faulty reading light in seat 14A, which was noted in the technical log.
+
+Ground handling at Bangkok took 95 minutes. TG628 then departed at 10:00 AM bound for Hong Kong International. The flight climbed to FL350, heading 045°, covering the distance in 2 hours and 35 minutes. There were 298 passengers including a school group of 42 students from Assumption College occupying rows 22-30. The aircraft landed on Runway 25L at 12:35 PM local Hong Kong time. During the approach, moderate rain was reported and the ILS approach was used for Runway 25L. Crew rest was taken at the Cathay Grand Hotel, room allocation for First Officer Siriporn was Room 2208.
+
+Following a 6-hour and 45-minute layover, TG622 departed Hong Kong at 19:20 PM bound for Osaka Kansai International. The flight cruised at FL390 on a heading of 055° for 3 hours and 20 minutes. There were 213 passengers on board. A medical incident occurred mid-flight when a 67-year-old male passenger experienced chest pains; the crew administered first aid and radioed ahead to Osaka. The aircraft landed at 23:40 PM local time on Runway 24R. Catering on this leg included 22 Buddhist vegetarian meals and 8 Halal meals. The aircraft was parked at Gate 16 upon arrival.`,
+  questions:[
+    {q:'What was the aircraft registration for all three flights?',opts:['HS-TGF','HS-TEK','HS-TKA','HS-TGK'],ans:1,cat:'Details'},
+    {q:'What runway was used for departure from Chiang Mai?',opts:['Runway 18','Runway 27','Runway 36','Runway 09'],ans:2,cat:'Numbers'},
+    {q:'What was the flight number from Bangkok to Hong Kong?',opts:['TG118','TG628','TG622','TG282'],ans:1,cat:'Sequences'},
+    {q:'How many passengers were on TG118 from Chiang Mai to Bangkok?',opts:['213','298','187','241'],ans:2,cat:'Numbers'},
+    {q:'What was the departure time of TG622 from Hong Kong?',opts:['12:35 PM','10:00 AM','19:20 PM','07:15 AM'],ans:2,cat:'Times'},
+    {q:'In which row was the faulty reading light reported?',opts:['Seat 2A','Seat 14A','Seat 22A','Seat 30A'],ans:1,cat:'Details'},
+    {q:'How many Buddhist vegetarian meals were loaded on the Osaka leg?',opts:['8','14','22','30'],ans:2,cat:'Numbers'},
+    {q:'What runway did TG628 land on in Hong Kong?',opts:['07R','25L','13C','28R'],ans:1,cat:'Numbers'},
+    {q:'What room did First Officer Siriporn stay in at the Hong Kong hotel?',opts:['1108','3308','2208','4412'],ans:2,cat:'Details'},
+    {q:'How many students from Assumption College were on TG628?',opts:['28','35','42','50'],ans:2,cat:'Numbers'},
+    {q:'What was the flight level used from Hong Kong to Osaka?',opts:['FL280','FL310','FL350','FL390'],ans:3,cat:'Numbers'},
+    {q:'What was the heading used for the Bangkok to Hong Kong flight?',opts:['185°','055°','045°','270°'],ans:2,cat:'Numbers'},
+    {q:'What gate was the aircraft parked at upon arrival in Osaka?',opts:['Gate 8','Gate 12','Gate 16','Gate 22'],ans:2,cat:'Details'},
+    {q:'What medical issue occurred on the Osaka flight?',opts:['Allergic reaction','Chest pains','Broken leg','Fainting'],ans:1,cat:'Details'},
+    {q:'What was the landing time at Osaka?',opts:['21:15 PM','22:50 PM','23:40 PM','00:15 AM'],ans:2,cat:'Times'},
+  ]
+},
+{
+  id:'P3', title:'Phuket–London Technical Rotation',
+  text:`Captain Wanchai Bunyarat, Thai Airways' most experienced B787 commander with 21,500 hours, was assigned an ultra-long-haul positioning flight from Phuket to London Heathrow, with technical stops in Colombo and Abu Dhabi. The rotation covered flights TG226, TG443, and TG910, all operated with a Boeing 787-9, registration HS-TWB.
+
+TG226 departed Phuket International Airport on September 3 at 05:30 AM, using Runway 09 for departure. Ambient temperature was 29°C with scattered showers. The aircraft carried 156 passengers and cruised at FL310 on a heading of 270°. Flight time to Colombo Bandaranaike International was 2 hours and 50 minutes, landing at 07:05 AM local time on Runway 04. A Thai Buddhist monk travelling in row 5 was carrying ceremonial artefacts in two specially approved cargo containers. The purser, Khun Naphat, logged an issue with the forward galley oven which was deactivated for the sector.
+
+Ground time at Colombo was 110 minutes. TG443 departed at 08:55 AM with 224 passengers, climbing to FL380 and cruising on heading 315° toward Abu Dhabi International Airport. The sector took 4 hours and 15 minutes. The aircraft landed at 11:55 AM local time on Runway 13L. During cruise, the ACARS system transmitted an advisory for engine 2 vibration levels at 0.8 units — within limits but logged by maintenance control at Bangkok. The crew was accommodated at the Premier Abu Dhabi Hotel, where Captain Wanchai was assigned Room 1047.
+
+After a mandatory 12-hour rest period, TG910 departed Abu Dhabi at 00:10 AM on September 4, carrying 301 passengers including a full charter group of 88 Thai government officials. The flight cruised at FL400 on a heading of 330° at Mach 0.85, taking 7 hours and 45 minutes to reach London. The aircraft landed at Heathrow Terminal 2 on Runway 27L at 06:55 AM local time. Catering for the charter group included 88 special Thai royal cuisine meals prepared by the Dusit Thani team. Ground temperature at Heathrow was 11°C with overcast skies.`,
+  questions:[
+    {q:'What aircraft type was used for all three flights?',opts:['Boeing 777-300ER','Airbus A350-900','Boeing 787-9','Boeing 787-8'],ans:2,cat:'Details'},
+    {q:'What was the departure runway at Phuket?',opts:['Runway 27','Runway 18','Runway 09','Runway 36'],ans:2,cat:'Numbers'},
+    {q:'How many passengers were on the Colombo to Abu Dhabi flight?',opts:['156','224','301','188'],ans:1,cat:'Numbers'},
+    {q:'What was the departure time of TG910 from Abu Dhabi?',opts:['23:00 PM','00:10 AM','01:30 AM','22:45 PM'],ans:1,cat:'Times'},
+    {q:'What room did Captain Wanchai stay in at the Abu Dhabi hotel?',opts:['2047','1047','3012','4108'],ans:1,cat:'Details'},
+    {q:'What was the engine advisory level reported during TG443?',opts:['0.4 units','0.6 units','0.8 units','1.2 units'],ans:2,cat:'Details'},
+    {q:'How many Thai government officials were on the London flight?',opts:['68','78','88','98'],ans:2,cat:'Numbers'},
+    {q:'What flight level was used for the Abu Dhabi to London sector?',opts:['FL350','FL380','FL390','FL400'],ans:3,cat:'Numbers'},
+    {q:'What was the landing runway at London Heathrow?',opts:['09L','27R','27L','09R'],ans:2,cat:'Numbers'},
+    {q:'What galley equipment was deactivated on TG226?',opts:['Coffee machine','Forward galley oven','Rear beverage cart','Ice maker'],ans:1,cat:'Details'},
+    {q:'What was the ground temperature at Heathrow on arrival?',opts:['7°C','11°C','15°C','19°C'],ans:1,cat:'Numbers'},
+    {q:'How long was the ground time at Colombo?',opts:['75 minutes','95 minutes','110 minutes','125 minutes'],ans:2,cat:'Numbers'},
+    {q:'What was the heading from Abu Dhabi to London?',opts:['270°','315°','330°','045°'],ans:2,cat:'Numbers'},
+    {q:'What was the aircraft registration?',opts:['HS-TTE','HS-TWB','HS-TBK','HS-TWA'],ans:1,cat:'Details'},
+    {q:'What was the landing time at London Heathrow local time?',opts:['05:30 AM','06:55 AM','07:45 AM','08:10 AM'],ans:1,cat:'Times'},
+  ]
+},
+];
+
+// ============================================================
+// MATH QUESTIONS BANK
+// ============================================================
+function genMathQs(){
+  var bank=[
+    {q:'127 + 85',a:212},{q:'243 - 67',a:176},{q:'15 × 14',a:210},
+    {q:'196 + 84',a:280},{q:'312 - 145',a:167},{q:'18 × 9',a:162},
+    {q:'224 + 176',a:400},{q:'403 - 158',a:245},{q:'13 × 17',a:221},
+    {q:'156 + 89',a:245},{q:'275 - 138',a:137},{q:'16 × 12',a:192},
+    {q:'189 + 97',a:286},{q:'342 - 167',a:175},{q:'14 × 13',a:182},
+  ];
+  var shuffled=bank.sort(function(){return Math.random()-0.5});
+  return shuffled.slice(0,6);
+}
+
+// ============================================================
+// STATE
+// ============================================================
+var state={
+  passageIdx:0,
+  phase:'start',
+  timer:null,
+  timeLeft:0,
+  mathQs:[],
+  userAnswers:{},
+};
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload=function(){
+  var sel=document.getElementById('pass-select');
+  PASSAGES.forEach(function(p,i){
+    var btn=document.createElement('button');
+    btn.className='ps-btn'+(i===0?' active':'');
+    btn.textContent=p.id+': '+p.title;
+    btn.onclick=function(){
+      state.passageIdx=i;
+      sel.querySelectorAll('.ps-btn').forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+    };
+    sel.appendChild(btn);
+  });
+};
+
+function showPhase(id){
+  document.querySelectorAll('.phase').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('phase-'+id).classList.add('active');
+  state.phase=id;
+}
+
+// ============================================================
+// PHASE 1 — READ
+// ============================================================
+function startRead(){
+  var p=PASSAGES[state.passageIdx];
+  // Render passage with highlights on numbers
+  var html=p.text;
+  html=html.split('\n\n').map(function(para){return '<p>'+para+'</p>'}).join('');
+  document.getElementById('passage-text').innerHTML=html;
+  showPhase('read');
+  startTimer(180,'timer-display',function(){startMath()});
+}
+
+// ============================================================
+// PHASE 2 — MATH
+// ============================================================
+function startMath(){
+  clearInterval(state.timer);
+  state.mathQs=genMathQs();
+  var grid=document.getElementById('math-grid');
+  grid.innerHTML='';
+  state.mathQs.forEach(function(mq,i){
+    var div=document.createElement('div');
+    div.className='mq';
+    div.id='mq-'+i;
+    div.innerHTML='<div class="mq-q">'+mq.q+' = ?</div><input class="mq-inp" type="number" id="mi-'+i+'" placeholder="?" inputmode="numeric">';
+    grid.appendChild(div);
+  });
+  showPhase('math');
+  startTimer(60,'timer-display2',function(){gradeMath();startAnswer();});
+}
+
+function gradeMath(){
+  state.mathQs.forEach(function(mq,i){
+    var inp=document.getElementById('mi-'+i);
+    var card=document.getElementById('mq-'+i);
+    if(!inp) return;
+    var val=parseInt(inp.value);
+    if(val===mq.a){
+      card.classList.add('correct');
+    } else {
+      card.classList.add('wrong');
+      var ans=document.createElement('div');
+      ans.className='mq-ans';
+      ans.textContent='Answer: '+mq.a;
+      card.appendChild(ans);
+    }
+  });
+}
+
+// ============================================================
+// PHASE 3 — ANSWER
+// ============================================================
+function startAnswer(){
+  clearInterval(state.timer);
+  var p=PASSAGES[state.passageIdx];
+  state.userAnswers={};
+  var list=document.getElementById('q-list');
+  list.innerHTML='';
+  p.questions.forEach(function(q,qi){
+    var card=document.createElement('div');
+    card.className='q-card';
+    card.id='qc-'+qi;
+    var optsHtml=q.opts.map(function(o,oi){
+      return '<button class="opt" onclick="selectOpt('+qi+','+oi+',this)">'+['A','B','C','D'][oi]+'. '+o+'</button>';
+    }).join('');
+    card.innerHTML='<div class="q-num">Q'+( qi+1)+'  ·  '+q.cat+'</div><div class="q-text">'+q.q+'</div><div class="opts">'+optsHtml+'</div>';
+    list.appendChild(card);
+  });
+  showPhase('answer');
+  startTimer(180,'timer-display3',function(){submitAnswers();});
+}
+
+function selectOpt(qi,oi,btn){
+  var card=document.getElementById('qc-'+qi);
+  card.querySelectorAll('.opt').forEach(function(b){b.classList.remove('selected')});
+  btn.classList.add('selected');
+  card.classList.add('answered');
+  state.userAnswers[qi]=oi;
+}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+function submitAnswers(){
+  clearInterval(state.timer);
+  var p=PASSAGES[state.passageIdx];
+  var correct=0;
+  var catStats={};
+  var reviewItems=[];
+
+  // Mark answers
+  p.questions.forEach(function(q,qi){
+    var card=document.getElementById('qc-'+qi);
+    if(card){
+      var opts=card.querySelectorAll('.opt');
+      opts.forEach(function(b,oi){
+        if(oi===q.ans) b.classList.add('correct');
+        else if(state.userAnswers[qi]===oi) b.classList.add('wrong');
+      });
+    }
+    var isCorrect=(state.userAnswers[qi]===q.ans);
+    if(isCorrect) correct++;
+    if(!catStats[q.cat]) catStats[q.cat]={c:0,t:0};
+    catStats[q.cat].t++;
+    if(isCorrect) catStats[q.cat].c++;
+    reviewItems.push({q:q.q,correct:isCorrect,correctAns:q.opts[q.ans],userAns:state.userAnswers[qi]!==undefined?q.opts[state.userAnswers[qi]]:'(no answer)',cat:q.cat});
+  });
+
+  var pct=Math.round(correct/15*100);
+  showResults(correct,pct,catStats,reviewItems);
+}
+
+// ============================================================
+// RESULTS
+// ============================================================
+function showResults(correct,pct,catStats,reviewItems){
+  showPhase('results');
+  document.getElementById('score-display').textContent=pct+'%';
+  document.getElementById('score-display').style.color=pct>=70?'var(--green)':pct>=50?'var(--yellow)':'var(--red)';
+  document.getElementById('score-sub').textContent=correct+' / 15 correct';
+
+  var rg=document.getElementById('res-grid');
+  rg.innerHTML=[
+    {v:correct,l:'CORRECT',c:'var(--green)'},
+    {v:15-correct,l:'WRONG/SKIP',c:'var(--red)'},
+    {v:pct+'%',l:'SCORE',c:pct>=70?'var(--green)':pct>=50?'var(--yellow)':'var(--red)'},
+  ].map(function(r){return '<div class="rbox"><div class="rval" style="color:'+r.c+'">'+r.v+'</div><div class="rlbl">'+r.l+'</div></div>'}).join('');
+
+  // Coach note
+  var cn=document.getElementById('coach-note');
+  var note='';
+  if(pct>=80) note='Strong session. Memory encoding and retrieval under interference both working. Check which category had errors and focus review there.';
+  else if(pct>=60) note='Above baseline. The encoding phase is working but retrieval under time pressure is losing 2-3 questions. Scan all 15 first before answering — sequence your certain answers.';
+  else if(pct>=47) note='At baseline (50% = 7-8 correct). The math interference is degrading your trace. Before the math starts, spend 5 seconds replaying key numbers in sequence. This is the highest-leverage improvement available.';
+  else note='Below baseline. Focus on category tagging during reading — numbers, times, names, sequences. Do not read the passage like a story. Read it like a checklist.';
+  cn.innerHTML='<div class="coach-note-title">Coach Note</div><div class="coach-note-text">'+note+'</div>';
+
+  // Category breakdown
+  var cb=document.getElementById('cat-breakdown');
+  var cbHtml='<div class="cat-title">Accuracy by Category</div>';
+  Object.keys(catStats).forEach(function(cat){
+    var s=catStats[cat];
+    var cp=Math.round(s.c/s.t*100);
+    var col=cp>=80?'var(--green)':cp>=50?'var(--yellow)':'var(--red)';
+    cbHtml+='<div class="cat-row"><div class="cat-name">'+cat+'</div><div class="cat-bar-wrap"><div class="cat-bar" style="width:'+cp+'%;background:'+col+'"></div></div><div class="cat-pct" style="color:'+col+'">'+cp+'%</div></div>';
+  });
+  cb.innerHTML=cbHtml;
+
+  // Review list
+  var rl=document.getElementById('review-list');
+  rl.innerHTML=reviewItems.map(function(r,i){
+    return '<div class="rev-item '+(r.correct?'ok':'bad')+'"><div class="q-num">Q'+(i+1)+' · '+r.cat+'</div><div class="rev-q">'+r.q+'</div><div class="rev-a"><span class="correct-ans">✓ '+r.correctAns+'</span>'+(r.correct?'':' &nbsp; <span class="your-ans">✗ '+r.userAns+'</span>')+'</div></div>';
+  }).join('');
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer(seconds,displayId,onEnd){
+  clearInterval(state.timer);
+  state.timeLeft=seconds;
+  var tbar=document.getElementById('tbar');
+  var total=seconds;
+  function tick(){
+    var d=document.getElementById(displayId);
+    var m=Math.floor(state.timeLeft/60);
+    var s=state.timeLeft%60;
+    var str=m+':'+(s<10?'0':'')+s;
+    if(d) d.textContent=str;
+    var pct=(state.timeLeft/total*100);
+    if(tbar) tbar.style.width=pct+'%';
+    if(tbar) tbar.style.background=pct>50?'var(--cyan)':pct>20?'var(--yellow)':'var(--red)';
+    if(d){
+      d.className='';
+      if(state.timeLeft<=30) d.style.color='var(--red)';
+      else if(state.timeLeft<=60) d.style.color='var(--yellow)';
+    }
+    if(state.timeLeft<=0){
+      clearInterval(state.timer);
+      if(onEnd) onEnd();
+      return;
+    }
+    state.timeLeft--;
+  }
+  tick();
+  state.timer=setInterval(tick,1000);
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function resetAll(){
+  clearInterval(state.timer);
+  state.userAnswers={};
+  document.getElementById('tbar').style.width='100%';
+  document.getElementById('tbar').style.background='var(--cyan)';
+  showPhase('start');
+}
+</script>
+</body>
+</html>
