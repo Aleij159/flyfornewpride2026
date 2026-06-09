@@ -18,6 +18,9 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Co
 /* HEADER */
 #hdr{background:var(--s1);border-bottom:1px solid var(--border);padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
 .htitle{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--cyan)}
+.home-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid var(--border);border-radius:8px;color:var(--text2);text-decoration:none;font-size:16px;line-height:1;transition:all 0.15s;flex-shrink:0}
+.home-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.home-btn:active{transform:scale(0.94)}
 .hbadge{font-size:10px;color:var(--text3);letter-spacing:1px}
 
 /* TIMER BAR */
@@ -132,6 +135,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Co
 <body>
 
 <div id="hdr">
+  <a class="home-btn" href="index.html" title="Back to menu">⌂</a>
   <div class="htitle">STM TRAINER</div>
   <div class="hbadge">SPTG2026 · PRO#1 FORMAT</div>
 </div>

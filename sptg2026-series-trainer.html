@@ -25,6 +25,9 @@ input[type=number]{-moz-appearance:textfield}
 
 /* HEADER */
 #header{background:linear-gradient(135deg,#0f172a 0%,#0a0a0f 100%);border-bottom:1px solid var(--border2);padding:18px 20px 0;position:sticky;top:0;z-index:10;padding-top:max(18px,env(safe-area-inset-top))}
+.home-btn{position:absolute;top:max(16px,env(safe-area-inset-top));right:20px;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid var(--border2);border-radius:8px;color:var(--cyan);text-decoration:none;font-size:16px;line-height:1;transition:all 0.15s;z-index:11}
+.home-btn:hover{background:var(--cyan);color:#0a0a0f}
+.home-btn:active{transform:scale(0.94)}
 .eyebrow{font-size:9px;letter-spacing:4px;color:var(--cyan);text-transform:uppercase;margin-bottom:3px}
 .htitle{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#f8fafc;letter-spacing:-0.5px}
 #tabs{display:flex;margin-top:14px;border-bottom:1px solid var(--border)}
@@ -162,6 +165,7 @@ input[type=number]{-moz-appearance:textfield}
 <body>
 
 <div id="header">
+  <a class="home-btn" href="index.html" title="Back to menu">⌂</a>
   <div class="eyebrow">Student Pilot Training Group</div>
   <div class="htitle">Series Trainer</div>
   <div id="tabs">
