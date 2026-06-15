@@ -201,7 +201,7 @@ input[type=number]{-moz-appearance:textfield}
     <div id="qbox-wrap">
       <div id="seq-row"></div>
       <div id="ans-wrap">
-        <input id="ain" type="number" inputmode="decimal" placeholder="?" autocomplete="off"
+        <input id="ain" type="text" inputmode="text" placeholder="?" autocomplete="off"
           onkeydown="if(event.key==='Enter')submitAns()">
         <button id="subbtn" onclick="submitAns()">Submit →</button>
       </div>
@@ -306,7 +306,10 @@ var TYPES={
   GROUP:'Grouping rule',
   POWER:'Powers & roots',
   DIGIT:'Digit pattern',
-  MIXED:'Mixed operations'
+  MIXED:'Mixed operations',
+  PRIME:'Prime numbers',
+  CUBEDIFF:'Cube-gap difference',
+  FRAC:'Fraction series'
 };
 
 /* ---- HELPERS ---- */
@@ -420,9 +423,21 @@ var FIXED=[
   {seq:[1,2,3,3,5,5,8],ans:8,type:'INTER',hint:'even positions (2,3,5,8) form a Fibonacci sequence — 3+5=8; odd positions (1,3,5,8) follow the same values but do not form clean Fibonacci'},
   {seq:[6,19,15,3,7,20,16,4,8],ans:21,type:'INTER',hint:'four interleaved sequences'},
   /* --- NEW: Alternating Escalating Operations (×n then +n, operators climb) --- */
-  {seq:[2,3,6,9,36,41],ans:246,type:'MIXED',hint:'alternating ×n then +n — operators escalate: ×3,+3,×4,+5,×6,+7'},
-  {seq:[1,2,3,6,8,24,27],ans:108,type:'MIXED',hint:'alternating +n then ×n — operators escalate: +1,×3,+2,×4,+3,×4'},
-  {seq:[3,4,12,14,56,59],ans:236,type:'MIXED',hint:'alternating +n then ×n escalating: +1,×3,+2,×4,+3,×4'},
+  {seq:[3,4,8,10,30,33],ans:132,type:'MIXED',hint:'alternating add/multiply, both escalate by 1: +1, ×2, +2, ×3, +3, ×4'},
+  {seq:[2,4,6,18,21,84],ans:88,type:'MIXED',hint:'alternating multiply/add, both escalate by 1: ×2, +2, ×3, +3, ×4, +4'},
+  /* --- NEW: from real Pro#1 test (verified against answer key) --- */
+  {seq:[2,3,5,7,11,13],ans:17,type:'PRIME',hint:'consecutive prime numbers'},
+  {seq:[5,6,14,41,105],ans:230,type:'CUBEDIFF',hint:'differences are cubes: 1,8,27,64,125'},
+  {seq:[11,13,17,23,31],ans:41,type:'DIFF',hint:'differences +2,+4,+6,+8,+10'},
+  {seq:[0,1.5,3,4.5,6,7.5],ans:9,type:'ARITH',hint:'arithmetic +1.5 (fractions: 0, 3/2, 3, 9/2, 6, 15/2)'},
+  {seq:[40,60,90,135,202.5],ans:303.75,type:'GEO',hint:'geometric ×1.5 each term'},
+  {seq:[6,12,36,144],ans:720,type:'GEO',hint:'×2, ×3, ×4, ×5 escalating multiplier'},
+  {seq:['5/15','6/18','8/24','11/33','15/45','20/60'],ans:'26/78',type:'FRAC',hint:'numerator gaps +1,+2,+3,+4,+5; denominator = numerator × 3'},
+  {seq:[3,3,4,8,10,30],ans:33,type:'MIXED',hint:'alternating ×n,+n: ×1,+1,×2,+2,×3,+3'},
+  {seq:[16,18,36,38,76],ans:78,type:'MIXED',hint:'alternating +2,×2 repeating'},
+  {seq:[15,14,16,13,17],ans:12,type:'INTER',hint:'interleaved: odd +1 (15,16,17), even -1 (14,13,12)'},
+  {seq:[1,14,3,12,5],ans:10,type:'INTER',hint:'interleaved: odd +2 (1,3,5), even -2 (14,12,10)'},
+  {seq:[7,16,34,70,142,286,574],ans:1150,type:'MIXED',hint:'×2+2 each term'},
   /* --- NEW: Pair-Sum / Pair-Product grouping --- */
   {seq:[1,13,2,12,5,9,3],ans:11,type:'GROUP',hint:'pairs sum to 14: (1,13),(2,12),(5,9),(3,?)'},
   {seq:[3,7,8,2,5,5,6],ans:4,type:'GROUP',hint:'pairs sum to 10: (3,7),(8,2),(5,5),(6,?)'},
@@ -435,13 +450,30 @@ var FIXED=[
 ];
 
 function genAltEscalating(){
-  /* Rule: ×a, +a, ×(a+1), +(a+1+2)... operators climb */
-  var starts=[
-    function(){return{seq:[2,3,6,9,36,41],ans:246,type:'MIXED',hint:'alternating ×n,+n — operators escalate: ×3,+3,×4,+5,×6,+7'};},
-    function(){var s=rInt(1,4);var op=rInt(2,4);var seq=[s];seq.push(seq[0]*op);seq.push(seq[1]+op);seq.push(seq[2]*(op+1));seq.push(seq[3]+(op+2));seq.push(seq[4]*(op+2));return{seq:seq,ans:seq[seq.length-1]*(op+3),type:'MIXED',hint:'alternating ×n then +n — operators escalate'};},
-    function(){var s=rInt(1,3);var op=3;var seq=[s,s+1,(s+1)*op,(s+1)*op+op,(s+1)*op*2*(op)];return{seq:[s,s+1,(s+1)*op,(s+1)*op+op],ans:(s+1)*op*2,type:'MIXED',hint:'alternating +1,×n,+n,×n — escalating'};},
-  ];
-  return rPick(starts)();
+  /* Clean rule, two variants:
+     A) ×first then +: ×m, +a, ×(m+1), +(a+1), ×(m+2), +(a+2) ...
+     B) +first then ×: +a, ×m, +(a+1), ×(m+1), +(a+2), ×(m+2) ...
+     Both the multiply track and the add track escalate by exactly 1 each cycle.
+     Answer is computed by applying the SAME rule one more step, so it is always
+     consistent and uniquely defined. */
+  var multFirst=rInt(0,1)===0;
+  var m=rInt(2,3);          // starting multiplier
+  var a=rInt(1,3);          // starting addend
+  var start=rInt(1,3);
+  var seq=[start];
+  // we generate 6 visible terms, then the answer as the 7th
+  var ops=[];               // record op descriptions for the hint
+  var mi=m, ai=a;
+  for(var step=0;step<6;step++){
+    var prev=seq[seq.length-1];
+    var useMult = multFirst ? (step%2===0) : (step%2===1);
+    if(useMult){ seq.push(prev*mi); ops.push('×'+mi); mi++; }
+    else       { seq.push(prev+ai); ops.push('+'+ai); ai++; }
+  }
+  var ans=seq[6];           // 7th term is the answer
+  var visible=seq.slice(0,6);
+  return {seq:visible, ans:ans, type:'MIXED',
+    hint:'alternating multiply/add, both escalate by 1: '+ops.join(', ')};
 }
 function genPairSum(){
   var total=rInt(8,16);var pairs=[];
@@ -449,7 +481,54 @@ function genPairSum(){
   var last=rInt(1,total-1);pairs.push(last);
   return{seq:pairs,ans:total-last,type:'GROUP',hint:'pairs sum to '+total};
 }
-var GENS=[genArith,genArith,genGeo,genGeo,genAlt,genAlt,genDiff,genDiff,genFib,genFib,genInter,genGroup,genPower,genDigit,genMixed,genMixed,genAltEscalating,genPairSum];
+function genPrime(){
+  var primes=[2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97];
+  var start=rInt(0,primes.length-7);
+  var seq=primes.slice(start,start+6);
+  return{seq:seq,ans:primes[start+6],type:'PRIME',hint:'consecutive prime numbers'};
+}
+function genCubeDiff(){
+  /* differences are consecutive cubes: 1,8,27,64,125... starting at cube^3 */
+  var startCube=rInt(1,2);            // first gap is startCube^3
+  var s=rInt(2,8);                    // starting term
+  var seq=[s];
+  for(var k=0;k<5;k++){               // 5 gaps -> 6 visible terms
+    var c=startCube+k;
+    seq.push(seq[seq.length-1]+c*c*c);
+  }
+  var nextC=startCube+5;
+  var ans=seq[seq.length-1]+nextC*nextC*nextC;
+  return{seq:seq,ans:ans,type:'CUBEDIFF',hint:'differences are consecutive cubes (1,8,27,64,125...)'};
+}
+function genFraction(){
+  /* numerator follows arithmetic-ish growth, denominator = numerator × m */
+  var m=rPick([2,3]);
+  var n=rInt(3,8);
+  var gap=rInt(1,3);
+  var nums=[n];
+  for(var i=0;i<5;i++){nums.push(nums[nums.length-1]+gap+i);} // gaps escalate
+  var seq=nums.slice(0,6).map(function(x){return x+'/'+(x*m);});
+  var lastNum=nums[6-1]+gap+5; // continue the escalating gap once more
+  // recompute properly: nums has 6 entries (index0..5); next gap = gap + 5
+  var nextNum=nums[5]+gap+5;
+  var ans=nextNum+'/'+(nextNum*m);
+  return{seq:seq,ans:ans,type:'FRAC',hint:'fraction: numerator gaps escalate, denominator = numerator × '+m};
+}
+function genAltEscalate2(){
+  /* both tracks escalate by 2 each cycle (e.g. ×3,+4,×5,+6) */
+  var multFirst=rInt(0,1)===0;
+  var m=rPick([2,3]);var a=rPick([2,3]);
+  var start=rInt(1,3);
+  var seq=[start],mi=m,ai=a,ops=[];
+  for(var step=0;step<6;step++){
+    var prev=seq[seq.length-1];
+    var useMult=multFirst?(step%2===0):(step%2===1);
+    if(useMult){seq.push(prev*mi);ops.push('×'+mi);mi+=2;}
+    else{seq.push(prev+ai);ops.push('+'+ai);ai+=2;}
+  }
+  return{seq:seq.slice(0,6),ans:seq[6],type:'MIXED',hint:'alternating multiply/add, both escalate by 2: '+ops.join(', ')};
+}
+var GENS=[genArith,genArith,genGeo,genGeo,genAlt,genAlt,genDiff,genDiff,genFib,genFib,genInter,genGroup,genPower,genDigit,genMixed,genMixed,genAltEscalating,genPairSum,genPrime,genCubeDiff,genFraction,genAltEscalate2];
 
 function buildSession(){
   var pool=FIXED.slice().sort(function(){return Math.random()-0.5;});
@@ -553,7 +632,16 @@ function var_(name){return getComputedStyle(document.documentElement).getPropert
 function submitAns(){
   if(!active)return;
   clearInterval(timerInt);timerInt=null;
-  var v=parseFloat(document.getElementById('ain').value);
+  var raw=document.getElementById('ain').value.trim();
+  if(raw==='')  {startTimer();return;}
+  // fraction-type answers are compared as normalised strings
+  if(typeof currentAns==='string'&&currentAns.indexOf('/')>=0){
+    lastUserAns=raw;
+    var norm=function(x){return String(x).replace(/\s+/g,'');};
+    handleResult(norm(raw)===norm(currentAns),false);
+    return;
+  }
+  var v=parseFloat(raw);
   if(isNaN(v)){startTimer();return;}
   lastUserAns=v;
   handleResult(Math.abs(v-currentAns)<0.01,false);
