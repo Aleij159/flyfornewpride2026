@@ -309,7 +309,12 @@ var TYPES={
   MIXED:'Mixed operations',
   PRIME:'Prime numbers',
   CUBEDIFF:'Cube-gap difference',
-  FRAC:'Fraction series'
+  FRAC:'Fraction series',
+  TRIB:'Sum of previous three',
+  INSERT:'Inserted constant',
+  INTER3:'Triple interleaved',
+  INTERGEO:'Interleaved (arith + geometric)',
+  PRIMESET:'Prime set (not sequential)'
 };
 
 /* ---- HELPERS ---- */
@@ -438,6 +443,21 @@ var FIXED=[
   {seq:[15,14,16,13,17],ans:12,type:'INTER',hint:'interleaved: odd +1 (15,16,17), even -1 (14,13,12)'},
   {seq:[1,14,3,12,5],ans:10,type:'INTER',hint:'interleaved: odd +2 (1,3,5), even -2 (14,12,10)'},
   {seq:[7,16,34,70,142,286,574],ans:1150,type:'MIXED',hint:'×2+2 each term'},
+  {seq:[1,3,1,5,9,15],ans:29,type:'TRIB',hint:'each term = sum of previous three: 5+9+15=29'},
+  {seq:[83,73,93,63,53,93],ans:43,type:'INSERT',hint:'-10 run (83,73,63,53,43) with 93 inserted every 3rd position'},
+  {seq:[70,71,76,70,81,86],ans:70,type:'INSERT',hint:'+5 run (71,76,81,86,91) with 70 inserted every 3rd position'},
+  {seq:[1,4,6,6,12,9,11,36,12],ans:16,type:'INTER3',hint:'three interleaved: +5 (1,6,11,16), ×3 (4,12,36), +3 (6,9,12)'},
+  /* --- 2-way interleaved (real Pro#1 examples) --- */
+  {seq:[13,29,15,26,17,23,19],ans:20,type:'INTER',hint:'interleaved: odd +2 (13,15,17,19), even -3 (29,26,23,20)'},
+  {seq:[-2,2,-5,4,-8,8,-11,16],ans:-14,type:'INTER',hint:'interleaved: odd -3 (-2,-5,-8,-11,-14), even ×2 (2,4,8,16)'},
+  {seq:[9,1,5,4],ans:1,type:'INTER',hint:'interleaved: odd -4 (9,5,1), even ×4 (1,4,16)'},
+  /* --- alternating ops (real Pro#1 examples) --- */
+  {seq:[664,332,340,170],ans:178,type:'ALT',hint:'alternating ÷2, +8: 170+8=178'},
+  {seq:[7,-14,-19,38,33,-66,-71,142,137],ans:-274,type:'ALT',hint:'alternating ×-2, -5: 137×-2=-274'},
+  /* --- geometric interleave (real Pro#1 example) --- */
+  {seq:[0,3,-5,-12,-10,48,-15],ans:-192,type:'INTERGEO',hint:'interleaved: odd -5 (0,-5,-10,-15,-20), even ×-4 (3,-12,48,-192)'},
+  /* --- scrambled primes (real Pro#1 example): all terms prime, not sequential; any prime is correct --- */
+  {seq:[79,19,11,71,43],ans:73,type:'PRIMESET',hint:'all terms are prime numbers (scrambled) — the answer is any prime (e.g. 73). Distractors on the real test were composite (99, 39, 27).'},
   /* --- NEW: Pair-Sum / Pair-Product grouping --- */
   {seq:[1,13,2,12,5,9,3],ans:11,type:'GROUP',hint:'pairs sum to 14: (1,13),(2,12),(5,9),(3,?)'},
   {seq:[3,7,8,2,5,5,6],ans:4,type:'GROUP',hint:'pairs sum to 10: (3,7),(8,2),(5,5),(6,?)'},
@@ -528,7 +548,68 @@ function genAltEscalate2(){
   }
   return{seq:seq.slice(0,6),ans:seq[6],type:'MIXED',hint:'alternating multiply/add, both escalate by 2: '+ops.join(', ')};
 }
-var GENS=[genArith,genArith,genGeo,genGeo,genAlt,genAlt,genDiff,genDiff,genFib,genFib,genInter,genGroup,genPower,genDigit,genMixed,genMixed,genAltEscalating,genPairSum,genPrime,genCubeDiff,genFraction,genAltEscalate2];
+function genTribonacci(){
+  /* each term = sum of previous three (tribonacci) */
+  var a=rInt(1,4),b=rInt(1,4),c=rInt(1,4);
+  var seq=[a,b,c];
+  for(var i=3;i<7;i++) seq.push(seq[i-1]+seq[i-2]+seq[i-3]);
+  return{seq:seq.slice(0,6),ans:seq[6],type:'TRIB',hint:'each term = sum of previous three'};
+}
+function genInsertConstant(){
+  /* a run (arith) with a constant value inserted at every 3rd position */
+  var start=rInt(40,90), step=rPick([-10,-5,5,10]);
+  var konst=rInt(60,99);
+  var run=[]; for(var i=0;i<6;i++) run.push(start+step*i);
+  // weave: positions 1..N, every 3rd (index 2,5,8...) is konst
+  var seq=[]; var ri2=0;
+  for(var p=0;p<8;p++){
+    if((p+1)%3===0) seq.push(konst);
+    else seq.push(run[ri2++]);
+  }
+  // answer is the 8th visible -> we show 7, ask 8th... show first 7, ans = seq[7]
+  var visible=seq.slice(0,7);
+  return{seq:visible,ans:seq[7],type:'INSERT',hint:'arithmetic run ('+step+' each) with '+konst+' inserted at every 3rd position'};
+}
+function genTripleInter(){
+  /* three independent sub-series woven A,B,C,A,B,C... */
+  var aStart=rInt(1,5), aStep=rPick([3,4,5,6]);
+  var bStart=rInt(2,5), bRatio=rPick([2,3]);
+  var cStart=rInt(3,8), cStep=rPick([2,3,4]);
+  var A=[],B=[],C=[];
+  for(var i=0;i<4;i++){A.push(aStart+aStep*i);B.push(bStart*Math.pow(bRatio,i));C.push(cStart+cStep*i);}
+  // weave A0,B0,C0,A1,B1,C1,A2,B2,C2,A3...  show 9, ask 10th (=A[3])
+  var seq=[A[0],B[0],C[0],A[1],B[1],C[1],A[2],B[2],C[2]];
+  return{seq:seq,ans:A[3],type:'INTER3',hint:'three interleaved: +'+aStep+' / ×'+bRatio+' / +'+cStep};
+}
+function genInterGeo(){
+  /* two interleaved: one arithmetic track, one geometric track */
+  var aStart=rPick([0,1,2,5,-2,-5]); var aStep=rPick([-5,-4,-3,3,4,5]);
+  var gStart=rPick([2,3,-2,-3]); var gRatio=rPick([2,3,-2,-3,-4]);
+  // build 7 visible terms: A,G,A,G,A,G,A  (4 arith, 3 geo) -> ask 8th (geo)
+  var A=[],G=[];
+  for(var i=0;i<4;i++) A.push(aStart+aStep*i);
+  for(var j=0;j<4;j++) G.push(gStart*Math.pow(gRatio,j));
+  var seq=[A[0],G[0],A[1],G[1],A[2],G[2],A[3]];
+  return{seq:seq,ans:G[3],type:'INTERGEO',hint:'interleaved: arithmetic ('+aStep+' each) + geometric (×'+gRatio+')'};
+}
+function isPrimeNum(n){
+  n=Math.abs(Math.round(n));
+  if(n<2)return false;
+  for(var i=2;i*i<=n;i++){if(n%i===0)return false;}
+  return true;
+}
+function genPrimeSet(){
+  /* all terms are prime but SCRAMBLED (not sequential). Any prime is a valid answer. */
+  var pool=[11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97];
+  var p=pool.slice();
+  for(var i=p.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=p[i];p[i]=p[j];p[j]=tmp;}
+  var pickN=rInt(5,6);
+  var chosen=p.slice(0,pickN);
+  var remaining=pool.filter(function(x){return chosen.indexOf(x)<0;});
+  var repAns=remaining[Math.floor(Math.random()*remaining.length)];
+  return{seq:chosen,ans:repAns,type:'PRIMESET',hint:'all terms are prime numbers (scrambled, not in order) — the answer is any prime number'};
+}
+var GENS=[genArith,genArith,genGeo,genGeo,genAlt,genAlt,genDiff,genDiff,genFib,genFib,genInter,genGroup,genPower,genDigit,genMixed,genMixed,genAltEscalating,genPairSum,genPrime,genCubeDiff,genFraction,genAltEscalate2,genTribonacci,genInsertConstant,genTripleInter,genInterGeo,genPrimeSet];
 
 function buildSession(){
   var pool=FIXED.slice().sort(function(){return Math.random()-0.5;});
@@ -634,6 +715,14 @@ function submitAns(){
   clearInterval(timerInt);timerInt=null;
   var raw=document.getElementById('ain').value.trim();
   if(raw==='')  {startTimer();return;}
+  // scrambled-prime type: any prime number is correct
+  if(currentType==='PRIMESET'){
+    var pv=parseInt(raw,10);
+    if(isNaN(pv)){startTimer();return;}
+    lastUserAns=pv;
+    handleResult(isPrimeNum(pv),false);
+    return;
+  }
   // fraction-type answers are compared as normalised strings
   if(typeof currentAns==='string'&&currentAns.indexOf('/')>=0){
     lastUserAns=raw;
